@@ -83,16 +83,19 @@ G90                   ; Absolut position
 
 # Check what filament we're printing. If it's ABS or ASA we're printing then start a heatsoak.
 {% if filament_type == "ABS" or filament_type == "ASA" %}
-  STATUS_HEATING                              ; Set SB-leds to heating-mode
-  M106 S255                                   ; Turn on the PT-fan
-  SET_FAN_SPEED FAN={exhaustfan} SPEED=0.25   ; Turn on the exhaust fan
-  SET_PIN PIN={nevermore} VALUE=1             ; Turn on the nevermore
-  G1 X{x_wait} Y{y_wait} Z15 F9000            ; Go to the center of the bed
-  M190 S{target_bed}                          ; Set the target temp for the bed
+  M117 Heating ~bed~{target_bed}~degrees~           ; Display info on the display
+  STATUS_HEATING                                    ; Set SB-leds to heating-mode
+  M106 S255                                         ; Turn on the PT-fan
+  SET_FAN_SPEED FAN={exhaustfan} SPEED=0.25         ; Turn on the exhaust fan
+  SET_PIN PIN={nevermore} VALUE=1                   ; Turn on the nevermore
+  G1 X{x_wait} Y{y_wait} Z15 F9000                  ; Go to the center of the bed
+  M190 S{target_bed}                                ; Set the target temp for the bed
+  M117 Soaking ~chamber~ {target_chamber}~degrees~  ; Display info on the display
   TEMPERATURE_WAIT SENSOR="{target_chamberthermistor}" MINIMUM={target_chamber}   ; Wait for chamber to reach desired temp
 
 # If it's not ABS or ASA it skips the heatsoak and just heat the bed to the target.
 {% else %}
+  M117 Heating ~bed~{target_bed}~degrees~         ; Display info on the display
   STATUS_HEATING                                  ; Set SB-leds to heating-mode
   G1 X{x_wait} Y{y_wait} Z15 F9000                ; Go to the center of the bed
   SET_FAN_SPEED FAN={exhaustfan} SPEED=0.25       ; Turn on the exhaust fan
@@ -100,27 +103,32 @@ G90                   ; Absolut position
 {% endif %}
 
 # Heating nozzle to 150 degrees
-M109 S150                       ; Heat the nozzle to 150c
+M117 Heating: ~extruder~ 150~degrees~   ; Display info on the display
+M109 S150                               ; Heat the nozzle to 150c
 
 # Quad gantry leveling and home Z again after.
+M117 QGL                        ; Display info on the display
 STATUS_LEVELING                 ; Set SB-leds to leveling-mode
 G32                             ; Quad gantry level aka QGL
 G28 Z                           ; Home Z again after QGL
 
 # Checks if you have a bed mesh possibilty, if so generate a new mesh.
 {% if "bed_mesh" in printer.configfile.settings %}
+M117 Bed mesh                   ; Display info on the display
 BED_MESH_CLEAR                  ; Clear any old saved bed mesh
 STATUS_MESHING                  ; Set SB-leds to bed mesh-mode
 bed_mesh_calibrate              ; Start bed mesh
 {% endif %}
 
 # Heat the nozzle up to target set in superslicer
-STATUS_HEATING                          ; Set SB-leds to heating-mode
-G1 X{x_wait} Y{y_wait} Z15 F9000        ; Go to the center of the bed
-M106 S0                                 ; Turn off the PT-fan
-M109 S{target_extruder}                 ; Heat the nozzle to your print temp
+M117 Heating ~extruder~: {target_extruder}~degrees~   ; Display info on the display
+STATUS_HEATING                                        ; Set SB-leds to heating-mode
+G1 X{x_wait} Y{y_wait} Z15 F9000                      ; Go to the center of the bed
+M106 S0                                               ; Turn off the PT-fan
+M109 S{target_extruder}                               ; Heat the nozzle to your print temp
 
 # Get ready to print
+M117 Print started!           ; Display info on the display
 STATUS_READY                  ; Set SB-leds to ready-mode
 G1 X25 Y5 Z10 F15000          ; Go to X25 and Y5
 STATUS_PRINTING               ; Set SB-leds to printing-mode
