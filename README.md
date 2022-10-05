@@ -16,7 +16,7 @@ This macro expect you to have the following:
 - An chamber thermistor
 
 
-## Required change in SuperSlicer
+## :warning: Required change in SuperSlicer :warning:
 You will need to make an update in SuperSlicer. Go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
 ```
@@ -25,13 +25,13 @@ print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 
 ![](/images/image1.png) 
 
-This will send info about your print temp, bed temp, filament and chamber temp to klipper for each print.
+This will send data about your print temp, bed temp, filament and chamber temp to klipper for each print.
 
-## Required change in the macro
+## :warning: Required change in the macro :warning:
 
 The macro below needs to know the the name of your nevermore, exhaust fan and chamber thermistor. I've made it easy for you so you only need to update it in one place.
 
-Look for the following in the print_start macro below:
+Look for the following in the macro below:
 
 ```
 #  This part you will need to update according to what you've defined your printers fans and thermistor as
@@ -50,6 +50,8 @@ For me this would be changed to:
 ```
 
 # The print_start macro
+
+Replace this macro with your current print_start macro in your printer.cfg. Don't forget to updated the chamber thermistor, exhaust fan and the nevermore - as mentioned above.
 
 ```
 #####################################################################
@@ -74,14 +76,14 @@ gcode:
 {% set nevermore = NAME_OF_NEVERMORE_FAN %}
 
 
-# Make the printer home, set absolut positioning and change the Stealthburner LED's to homing
-STATUS_HOMING         ; Set SB-led's to colors for homing
+# Make the printer home, set absolut positioning and update the Stealthburner leds
+STATUS_HOMING         ; Set SB-leds to homing-mode
 G28                   ; Full home (XYZ)
 G90                   ; Absolut position
 
-# Check what material we're printing. If it's either ABS or ASA we're printing, and if so do a heatsoak.
+# Check what filament we're printing. If it's ABS or ASA we're printing then start a heatsoak.
 {% if filament_type == "ABS" or filament_type == "ASA" %}
-  STATUS_HEATING                              ; Set SB-led's to colors for heating
+  STATUS_HEATING                              ; Set SB-leds to heating-mode
   M106 S255                                   ; Turn on the PT-fan
   SET_FAN_SPEED FAN={exhaustfan} SPEED=0.25   ; Turn on the exhaust fan
   SET_PIN PIN={nevermore} VALUE=1             ; Turn on the nevermore
@@ -89,9 +91,9 @@ G90                   ; Absolut position
   M190 S{target_bed}                          ; Set the target temp for the bed
   TEMPERATURE_WAIT SENSOR="{target_chamberthermistor}" MINIMUM={target_chamber}   ; Wait for chamber to reach desired temp
 
-# If it's not ABS or ASA we skip the heatsoak and just heat the bed to the target.
+# If it's not ABS or ASA it skips the heatsoak and just heat the bed to the target.
 {% else %}
-  STATUS_HEATING                                  ; Set SB-led's to colors for heating
+  STATUS_HEATING                                  ; Set SB-leds to heating-mode
   G1 X{x_wait} Y{y_wait} Z15 F9000                ; Go to the center of the bed
   SET_FAN_SPEED FAN={exhaustfan} SPEED=0.25       ; Turn on the exhaust fan
   M190 S{target_bed}                              ; Set the target temp for the bed
@@ -101,24 +103,30 @@ G90                   ; Absolut position
 M109 S150                       ; Heat the nozzle to 150c
 
 # Quad gantry leveling and home Z again after.
-STATUS_LEVELING                 ; Set SB-led's to colors for leveling
-G32                             ; QGL
+STATUS_LEVELING                 ; Set SB-leds to leveling-mode
+G32                             ; Quad gantry level aka QGL
 G28 Z                           ; Home Z again after QGL
 
-# Takes a fresh bed mesh.
-BED_MESH_CLEAR                  ; Removes old bed mesh
-STATUS_MESHING                  ; Set SB-led's to colors for bed mesh
-bed_mesh_calibrate              ; Bed mesh
+# Checks if you have a bed mesh possibilty, if so generate a new mesh.
+{% if "bed_mesh" in printer.configfile.settings %}
+BED_MESH_CLEAR                  ; Clear any old saved bed mesh
+STATUS_MESHING                  ; Set SB-leds to bed mesh-mode
+bed_mesh_calibrate              ; Start bed mesh
+{% endif %}
 
 # Heat the nozzle up to target set in superslicer
-STATUS_HEATING                          ; Set SB-led's to colors for heating
+STATUS_HEATING                          ; Set SB-leds to heating-mode
 G1 X{x_wait} Y{y_wait} Z15 F9000        ; Go to the center of the bed
-M106 S10                                ; Turn off the PT-fan
+M106 S0                                 ; Turn off the PT-fan
 M109 S{target_extruder}                 ; Heat the nozzle to your print temp
 
 # Get ready to print
-STATUS_READY                  ; Set SB-led's to colors for ready
+STATUS_READY                  ; Set SB-leds to ready-mode
 G1 X25 Y5 Z10 F15000          ; Go to X25 and Y5
-STATUS_PRINTING               ; Set SB-led's to colors for printing
+STATUS_PRINTING               ; Set SB-leds to printing-mode
 G92 E0.0                      ; Set position 
 ```
+
+### Feedback
+
+If you have feedback feel free to hit me up on discord jontek2#2992
