@@ -87,9 +87,9 @@ STATUS_MESHING												; Set SB-led's to colors for bed mesh
 bed_mesh_calibrate										; Bed mesh
 
 # Heat the nozzle up to target set in superslicer
-STATUS_HEATING												; Set SB-led's to colors for heating
-G1 X{x_wait} Y{y_wait} Z15 F9000			; Go to the center of the bed
-M109 S{target_extruder}								; Heat the nozzle to your print temp
+STATUS_HEATING                  ; Set SB-led's to colors for heating
+G1 X{x_wait} Y{y_wait} Z15 F9000                  ; Go to the center of the bed
+M109 S{target_extruder}                 ; Heat the nozzle to your print temp
 
 # Get ready to print
 STATUS_READY                  ; Set SB-led's to colors for ready
