@@ -9,7 +9,7 @@ By doing so you will be able to automatically heatsoak and customize your printe
 ## Requirements
 
 This macro expect you to have the following:
-
+- A voron 3D-printer
 - [Superslicer](https://github.com/supermerill/SuperSlicer)
 - [Stealthburner](https://vorondesign.com/voron_stealthburner)
 - An exhaust fan
@@ -43,7 +43,7 @@ Look for the following in the macro below:
 For me this would be changed to:
 
 ```
-#  This part you will need to update according to what you've defined your printers fans and thermistor as
+#  UPDATE THIS: Update this according to what you've defined your printers fans and thermistor as!
 {% set target_chamberthermistor = temperature_sensor chamber %}
 {% set exhaustfan = exhaust_fan %}
 {% set nevermore = nevermore %}
@@ -62,6 +62,11 @@ Replace this macro with your current print_start macro in your printer.cfg. Don'
 [gcode_macro PRINT_START]
 gcode:
 
+#  UPDATE THIS: Update this according to what you've defined your printers fans and thermistor as!
+{% set target_chamberthermistor = temperature_sensor NAME_OF_THERMISTOR_FAN %}
+{% set exhaustfan = NAME_OF_EXHAUST_FAN %}
+{% set nevermore = NAME_OF_NEVERMORE_FAN %}
+
 # This part fetches data from SuperSlicer. Such as what bed temp, extruder temp, chamber temp and filament.
 {% set target_bed = params.BED|int %}
 {% set target_extruder = params.EXTRUDER|int %}
@@ -69,12 +74,6 @@ gcode:
 {% set filament_type = params.FILAMENT|int %}
 {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
 {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
-
-#  This part you will need to update according to what you've defined your printers fans and thermistor as
-{% set target_chamberthermistor = temperature_sensor NAME_OF_THERMISTOR_FAN %}
-{% set exhaustfan = NAME_OF_EXHAUST_FAN %}
-{% set nevermore = NAME_OF_NEVERMORE_FAN %}
-
 
 # Make the printer home, set absolut positioning and update the Stealthburner leds
 STATUS_HOMING         ; Set SB-leds to homing-mode
