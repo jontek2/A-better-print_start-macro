@@ -10,15 +10,14 @@ By doing so you will be able to automatically heatsoak and customize your printe
 
 This macro expect you to have the following:
 
-- Superslicer
-- Stealthburner with the LED's
-- A nevermore
+- (Superslicer)[https://github.com/supermerill/SuperSlicer]
+- (Stealthburner)[https://vorondesign.com/voron_stealthburner]
 - An exhaust fan
 - A chamber thermistor
 
 
 ## Required change in SuperSlicer
-You will need to make an update in SuperSlicer. Go to "Printer settings" -> "Custom g-code" -> "Start G-code" and add:
+You will need to make an update in SuperSlicer. Go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
 ```
 print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]
@@ -28,11 +27,34 @@ print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 
 This will send info about your print temp, bed temp, filament and chamber temp to klipper for each print.
 
+## Required change in the macro below
+
+The macro below needs to know the the name of your nevermore, exhaust fan and chamber thermistor. I've made it easy for you so you only need to update it in one place.
+
+Look for the following in the print_start macro below:
+
+```
+#  This part you will need to update according to what you've defined your printers fans and thermistor as
+{% set target_chamberthermistor = temperature_sensor NAME_OF_THERMISTOR_FAN %}
+{% set exhaustfan = NAME_OF_EXHAUST_FAN %}
+{% set nevermore = NAME_OF_NEVERMORE_FAN %}
+```
+
+For me this would be changed to:
+
+```
+#  This part you will need to update according to what you've defined your printers fans and thermistor as
+{% set target_chamberthermistor = temperature_sensor chamber %}
+{% set exhaustfan = exhaust_fan %}
+{% set nevermore = nevermore %}
+```
+
 # The print_start macro
 
 ```
 #####################################################################
 # 	print_start macro
+# To be used with "print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]" in SuperSlicer
 #####################################################################
 
 [gcode_macro PRINT_START]
@@ -41,8 +63,8 @@ gcode:
 # This part fetches data from SuperSlicer. Such as what bed temp, extruder temp, chamber temp and filament.
 {% set target_bed = params.BED|int %}
 {% set target_extruder = params.EXTRUDER|int %}
-{% set target_chamber = params.CHAMBER|default(0)|int %}
-{% set filament_type = params.FILAMENT|default("ABS")|upper %}
+{% set target_chamber = params.CHAMBER|int %}
+{% set filament_type = params.FILAMENT|int %}
 {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
 {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
@@ -65,15 +87,15 @@ G90                   ; Absolut position
   SET_PIN PIN={nevermore} VALUE=1             ; Turn on the nevermore
   G1 X{x_wait} Y{y_wait} Z15 F9000            ; Go to the center of the bed
   M190 S{target_bed}                          ; Set the target temp for the bed
-  TEMPERATURE_WAIT SENSOR="{target_chamberthermistor}" MINIMUM={target_chamber}   ; Wait for chamber to reach desirec temp
+  TEMPERATURE_WAIT SENSOR="{target_chamberthermistor}" MINIMUM={target_chamber}   ; Wait for chamber to reach desired temp
 
 # If it's not ABS or ASA we skip the heatsoak and just heat the bed to the target.
-    {% else %}
-    STATUS_HEATING                                  ; Set SB-led's to colors for heating
-    G1 X{x_wait} Y{y_wait} Z15 F9000                ; Go to the center of the bed
-    SET_FAN_SPEED FAN={exhaustfan} SPEED=0.25       ; Turn on the exhaust fan
-    M190 S{target_bed}                              ; Set the target temp for the bed
-    {% endif %}
+{% else %}
+  STATUS_HEATING                                  ; Set SB-led's to colors for heating
+  G1 X{x_wait} Y{y_wait} Z15 F9000                ; Go to the center of the bed
+  SET_FAN_SPEED FAN={exhaustfan} SPEED=0.25       ; Turn on the exhaust fan
+  M190 S{target_bed}                              ; Set the target temp for the bed
+{% endif %}
 
 # Heating nozzle to 150 degrees
 M109 S150                       ; Heat the nozzle to 150c
@@ -91,6 +113,7 @@ bed_mesh_calibrate              ; Bed mesh
 # Heat the nozzle up to target set in superslicer
 STATUS_HEATING                          ; Set SB-led's to colors for heating
 G1 X{x_wait} Y{y_wait} Z15 F9000        ; Go to the center of the bed
+M106 S10                                ; Turn off the PT-fan
 M109 S{target_extruder}                 ; Heat the nozzle to your print temp
 
 # Get ready to print
