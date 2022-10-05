@@ -6,14 +6,14 @@ This document aims to help you get a simple but powerful start_macro for your vo
 
 By doing so you will be able to automatically heatsoak and customize your printers behaviour. 
 
-## Requirement for this macro
+## Requirements
 
 This macro expect you to have the following:
 
-* (Superslicer)[https://github.com/supermerill/SuperSlicer ]
-* (Stealthburner)[https://vorondesign.com/voron_stealthburner ]
-* An exhaust fan
-* A chamber thermistor
+- [Superslicer](https://github.com/supermerill/SuperSlicer)
+- [Stealthburner](https://vorondesign.com/voron_stealthburner)
+- An exhaust fan
+- An chamber thermistor
 
 
 ## Required change in SuperSlicer
@@ -27,7 +27,7 @@ print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 
 This will send info about your print temp, bed temp, filament and chamber temp to klipper for each print.
 
-## Required change in the macro below
+## Required change in the macro
 
 The macro below needs to know the the name of your nevermore, exhaust fan and chamber thermistor. I've made it easy for you so you only need to update it in one place.
 
