@@ -51,7 +51,7 @@ For me this would be changed to:
 
 # The print_start macro
 
-Replace this macro with your current print_start macro in your printer.cfg. Don't forget to updated the chamber thermistor, exhaust fan and the nevermore - as mentioned above.
+Replace this macro with your current print_start macro in your printer.cfg. Don't forget to updated the chamber thermistor, exhaust fan and the nevermore, as mentioned above.
 
 ```
 #####################################################################
