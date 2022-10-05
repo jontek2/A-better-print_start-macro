@@ -10,10 +10,10 @@ By doing so you will be able to automatically heatsoak and customize your printe
 
 This macro expect you to have the following:
 
-- (Superslicer)[https://github.com/supermerill/SuperSlicer]
-- (Stealthburner)[https://vorondesign.com/voron_stealthburner]
-- An exhaust fan
-- A chamber thermistor
+* (Superslicer)[https://github.com/supermerill/SuperSlicer]
+* (Stealthburner)[https://vorondesign.com/voron_stealthburner]
+* An exhaust fan
+* A chamber thermistor
 
 
 ## Required change in SuperSlicer
