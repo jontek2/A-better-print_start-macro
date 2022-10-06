@@ -8,11 +8,16 @@ By doing so you will be able to automatically heatsoak and customize your printe
 
 ## Requirements
 
-This macro expect you to have the following:
-- A voron 3D-printer
+For v2/trident:
+
 - [Superslicer](https://github.com/supermerill/SuperSlicer)
 - [Stealthburner](https://vorondesign.com/voron_stealthburner)
 - An exhaust fan
+- An chamber thermistor
+
+For v0:
+
+- [Superslicer](https://github.com/supermerill/SuperSlicer)
 - An chamber thermistor
 
 
@@ -49,7 +54,7 @@ For me this would be changed to:
 {% set nevermore = nevermore %}
 ```
 
-# The print_start macro
+# The print_start macro for V2/Trident
 
 Replace this macro with your current print_start macro in your printer.cfg. Don't forget to updated the chamber thermistor, exhaust fan and the nevermore, as mentioned above.
 
@@ -79,6 +84,11 @@ gcode:
 STATUS_HOMING         ; Set SB-leds to homing-mode
 G28                   ; Full home (XYZ)
 G90                   ; Absolut position
+
+# Remove any old bed_mesh that may be active
+{% if "bed_mesh" in printer.configfile.settings %}
+BED_MESH_CLEAR                  ; Clear any old saved bed mesh
+{% endif %}
 
 # Check what filament we're printing. If it's ABS or ASA we're printing then start a heatsoak.
 {% if filament_type == "ABS" or filament_type == "ASA" %}
@@ -111,10 +121,12 @@ STATUS_LEVELING                 ; Set SB-leds to leveling-mode
 G32                             ; Quad gantry level aka QGL
 G28 Z                           ; Home Z again after QGL
 
+# Uncomment this live below if you're using klicky with the auto z-function
+#CALIBRATE_Z                    ; Calibrate Z-offset with klicky
+
 # Checks if you have a bed mesh possibilty, if so generate a new mesh.
 {% if "bed_mesh" in printer.configfile.settings %}
 M117 Bed mesh                   ; Display info on the display
-BED_MESH_CLEAR                  ; Clear any old saved bed mesh
 STATUS_MESHING                  ; Set SB-leds to bed mesh-mode
 bed_mesh_calibrate              ; Start bed mesh
 {% endif %}
@@ -131,6 +143,61 @@ M117 Print started!           ; Display info on the display
 STATUS_READY                  ; Set SB-leds to ready-mode
 G1 X25 Y5 Z10 F15000          ; Go to X25 and Y5
 STATUS_PRINTING               ; Set SB-leds to printing-mode
+G92 E0.0                      ; Set position 
+```
+
+# The print_start macro for v0
+
+Replace this macro with your current print_start macro in your printer.cfg. Don't forget to updated the chamber thermistor, exhaust fan and the nevermore, as mentioned above.
+
+```
+#####################################################################
+#   print_start macro
+# To be used with "print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]" in SuperSlicer
+#####################################################################
+
+[gcode_macro PRINT_START]
+gcode:
+
+#  UPDATE THIS: Update this according to what you've defined your printers fans and thermistor as!
+{% set target_chamberthermistor = temperature_sensor NAME_OF_THERMISTOR_FAN %}
+{% set nevermore = NAME_OF_NEVERMORE_FAN %}
+
+# This part fetches data from SuperSlicer. Such as what bed temp, extruder temp, chamber temp and filament.
+{% set target_bed = params.BED|int %}
+{% set target_extruder = params.EXTRUDER|int %}
+{% set target_chamber = params.CHAMBER|int %}
+{% set filament_type = params.FILAMENT|int %}
+{% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
+{% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
+
+# Make the printer home and set absolut positioning
+G28                   ; Full home (XYZ)
+G90                   ; Absolut position
+
+
+# Check what filament we're printing. If it's ABS or ASA we're printing then start a heatsoak.
+{% if filament_type == "ABS" or filament_type == "ASA" %}
+  M117 Heating ~bed~{target_bed}~degrees~           ; Display info on the display
+  M106 S255                                         ; Turn on the PT-fan
+  SET_PIN PIN={nevermore} VALUE=1                   ; Turn on the nevermore
+  G1 X{x_wait} Y{y_wait} Z15 F9000                  ; Go to the center of the bed
+  M190 S{target_bed}                                ; Set the target temp for the bed
+  TEMPERATURE_WAIT SENSOR="{target_chamberthermistor}" MINIMUM={target_chamber}   ; Wait for chamber to reach desired temp
+
+# If it's not ABS or ASA it skips the heatsoak and just heat the bed to the target.
+{% else %}
+  G1 X{x_wait} Y{y_wait} Z15 F9000                ; Go to the center of the bed
+  M190 S{target_bed}                              ; Set the target temp for the bed
+{% endif %}
+
+# Heat the nozzle up to target set in superslicer
+G1 X{x_wait} Y{y_wait} Z15 F9000                      ; Go to the center of the bed
+M106 S0                                               ; Turn off the PT-fan
+M109 S{target_extruder}                               ; Heat the nozzle to your print temp
+
+# Get ready to print
+G1 X25 Y5 Z10 F15000          ; Go to X25 and Y5
 G92 E0.0                      ; Set position 
 ```
 
