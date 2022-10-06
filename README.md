@@ -1,9 +1,12 @@
 # A better print_start macro
 
-**:warning: = THIS IS VERY MUCH A BETA AND IT HAS NOT BEEN TESTED.**
+**:warning: = This is still in BETA**
 
-This macro and document aims to help you get a simple but yet powerful start_macro for your voron printer! With this macro you will be able to pass variables, such as print temps, chamber temps, filament type, to your print start macro. By doing so you will be able to automatically heatsoak and customize your printers behaviour. 
+This macro and document aims to help you get a simple but powerful start_macro for your voron printer! With this macro you will be able to pass variables (print temps, chamber temps, filament type) to your print start macro. By doing so you will be able to automatically heatsoak and customize your printers behaviour based upon what material you're printing, 
 
+Each command has a comment next to it explaining what it does. Make sure to read thru the macro and get an understanding of what it does.
+
+If you have a klicky with the auto-z function then uncomment the line for #CALIBRATE_Z.
 
 ## Requirements
 
@@ -54,15 +57,15 @@ Make sure that nevermore is named "nevermore".
 ```
 
 **Exhaust**:
-Make sure that exhaust fan is named "exhaust".
+Make sure that exhaust fan is named "exhaust_fan".
 
 ```
-[output_pin exhaust]
+[output_pin exhaust_fan]
 ```
 
 # The print_start macro for V2/Trident
 
-Replace this macro with your current print_start macro in your printer.cfg. Don't forget to updated the chamber thermistor, exhaust fan and the nevermore, as mentioned above.
+Replace this macro with your current print_start macro in your printer.cfg
 
 ```
 #####################################################################
@@ -92,27 +95,27 @@ gcode:
 
   # Check what filament we're printing. If it's ABS or ASA we're printing then start a heatsoak.
   {% if filament_type == "ABS" or filament_type == "ASA" %}
-    M117 Heating: ~bed~{target_bed}~degrees~            ; Display info on the display
+    M117 Heating ~bed~{target_bed}~degrees~            ; Display info on the display
     STATUS_HEATING                                      ; Set SB-leds to heating-mode
     M106 S255                                           ; Turn on the PT-fan
-    SET_FAN_SPEED FAN=exhaust SPEED=0.25                ; Turn on the exhaust fan
+    SET_FAN_SPEED FAN=exhaust_fan SPEED=0.25            ; Turn on the exhaust fan
     SET_PIN PIN=nevermore VALUE=1                       ; Turn on the nevermore
     G1 X{x_wait} Y{y_wait} Z15 F9000                    ; Go to the center of the bed
     M190 S{target_bed}                                  ; Set the target temp for the bed
-    M117 Soaking ~chamber~: {target_chamber}~degrees~   ; Display info on the display
-    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   ; Wait for chamber to reach desired temp
+    M117 Soaking ~chamber~ {target_chamber}~degrees~   ; Display info on the display
+    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   ; Wait for chamber to reach desired temp.
 
   # If it's not ABS or ASA it skips the heatsoak and just heat the bed to the target.
   {% else %}
-    M117 Heating: ~bed~{target_bed}~degrees~         ; Display info on the display
+    M117 Heating ~bed~{target_bed}~degrees~        ; Display info on the display
     STATUS_HEATING                                  ; Set SB-leds to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                ; Go to the center of the bed
-    SET_FAN_SPEED FAN=exhaust SPEED=0.25            ; Turn on the exhaust fan
+    SET_FAN_SPEED FAN=exhaust_fan SPEED=0.25        ; Turn on the exhaust fan
     M190 S{target_bed}                              ; Set the target temp for the bed
   {% endif %}
 
   # Heating nozzle to 150 degrees
-  M117 Heating: ~extruder~ 150~degrees~   ; Display info on the display
+  M117 Heating ~extruder~ 150~degrees~   ; Display info on the display
   M109 S150                               ; Heat the nozzle to 150c
 
   # Quad gantry leveling and home Z again after.
@@ -132,7 +135,7 @@ gcode:
   {% endif %}
 
   # Heat the nozzle up to target set in SuperSlicer
-  M117 Heating: ~extruder~ {target_extruder}~degrees~   ; Display info on the display
+  M117 Heating ~extruder~ {target_extruder}~degrees~   ; Display info on the display
   STATUS_HEATING                                        ; Set SB-leds to heating-mode
   G1 X{x_wait} Y{y_wait} Z15 F9000                      ; Go to the center of the bed
   M106 S0                                               ; Turn off the PT-fan
@@ -148,8 +151,7 @@ gcode:
 
 # The print_start macro for v0
 
-Replace this macro with your current print_start macro in your printer.cfg. Don't forget to updated the chamber thermistor, exhaust fan and the nevermore, as mentioned above.
-
+Replace this macro with your current print_start macro in your printer.cfg
 ```
 #####################################################################
 #   print_start macro
@@ -165,7 +167,7 @@ gcode:
   {% set filament_type = params.FILAMENT|upper %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
-  
+
   # Make the printer home and set absolut positioning
   G28                   ; Full home (XYZ)
   G90                   ; Absolut position
@@ -195,6 +197,4 @@ gcode:
 
 ### Feedback
 
-If you have feedback feel free to hit me up on discord jontek2#2992
-
-
+If you have feedback feel free to hit me up on discord at jontek2#2992
