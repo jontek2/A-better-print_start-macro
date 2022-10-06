@@ -1,6 +1,6 @@
 # A better print_start macro
 
-**:warning: = THIS IS VERY MUCH A BETA AND IT HAS NOT BEEN TESTED. YET.**
+**:warning: = THIS IS VERY MUCH A BETA AND IT HAS NOT BEEN TESTED.**
 
 This document aims to help you get a simple but powerful start_macro for your voron printer! With this macro you will be able to pass variables, such as print temps, chamber temps, filamenttype, to your print start. 
 
@@ -10,19 +10,19 @@ By doing so you will be able to automatically heatsoak and customize your printe
 
 For v2/trident:
 
-- [Superslicer](https://github.com/supermerill/SuperSlicer)
 - [Stealthburner](https://vorondesign.com/voron_stealthburner)
-- An exhaust fan
-- An chamber thermistor
+- Chamber thermistor
+- [Nevermore](https://github.com/nevermore3d/Nevermore_Micro)
+- Exhaust fan
 
 For v0:
 
-- [Superslicer](https://github.com/supermerill/SuperSlicer)
-- An chamber thermistor
+- Chamber thermistor
+- [Nevermore](https://github.com/nevermore3d/Nevermore_Micro)
 
 
-## :warning: Required change in SuperSlicer :warning:
-You will need to make an update in SuperSlicer. Go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
+## :warning: Required change in slicer :warning:
+You will need to make an update in your slicer to be able to send the data to this macro. If you're using Superslicer then go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
 ```
 print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]
@@ -61,7 +61,7 @@ Replace this macro with your current print_start macro in your printer.cfg. Don'
 ```
 #####################################################################
 # 	print_start macro
-# To be used with "print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]" in SuperSlicer
+# To be used with "print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]" in your slicer
 #####################################################################
 
 [gcode_macro PRINT_START]
@@ -72,7 +72,7 @@ gcode:
 {% set exhaustfan = NAME_OF_EXHAUST_FAN %}
 {% set nevermore = NAME_OF_NEVERMORE_FAN %}
 
-# This part fetches data from SuperSlicer. Such as what bed temp, extruder temp, chamber temp and filament.
+# This part fetches data from the slicer. Such as what bed temp, extruder temp, chamber temp and filament.
 {% set target_bed = params.BED|int %}
 {% set target_extruder = params.EXTRUDER|int %}
 {% set target_chamber = params.CHAMBER|int %}
@@ -131,7 +131,7 @@ STATUS_MESHING                  ; Set SB-leds to bed mesh-mode
 bed_mesh_calibrate              ; Start bed mesh
 {% endif %}
 
-# Heat the nozzle up to target set in superslicer
+# Heat the nozzle up to target set in your slicer
 M117 Heating ~extruder~: {target_extruder}~degrees~   ; Display info on the display
 STATUS_HEATING                                        ; Set SB-leds to heating-mode
 G1 X{x_wait} Y{y_wait} Z15 F9000                      ; Go to the center of the bed
@@ -153,7 +153,7 @@ Replace this macro with your current print_start macro in your printer.cfg. Don'
 ```
 #####################################################################
 #   print_start macro
-# To be used with "print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]" in SuperSlicer
+# To be used with "print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]" in your slicer
 #####################################################################
 
 [gcode_macro PRINT_START]
@@ -163,7 +163,7 @@ gcode:
 {% set target_chamberthermistor = temperature_sensor NAME_OF_THERMISTOR_FAN %}
 {% set nevermore = NAME_OF_NEVERMORE_FAN %}
 
-# This part fetches data from SuperSlicer. Such as what bed temp, extruder temp, chamber temp and filament.
+# This part fetches data from the slicer. Such as what bed temp, extruder temp, chamber temp and filament.
 {% set target_bed = params.BED|int %}
 {% set target_extruder = params.EXTRUDER|int %}
 {% set target_chamber = params.CHAMBER|int %}
@@ -191,7 +191,7 @@ G90                   ; Absolut position
   M190 S{target_bed}                              ; Set the target temp for the bed
 {% endif %}
 
-# Heat the nozzle up to target set in superslicer
+# Heat the nozzle up to target set in your slicer
 G1 X{x_wait} Y{y_wait} Z15 F9000                      ; Go to the center of the bed
 M106 S0                                               ; Turn off the PT-fan
 M109 S{target_extruder}                               ; Heat the nozzle to your print temp
