@@ -12,7 +12,6 @@ If you have a klicky with the auto-z function then uncomment the line for #CALIB
 
 **For V2/Trident:**
 
-- [SuperSlicer](https://github.com/supermerill/SuperSlicer)
 - [Stealthburner](https://vorondesign.com/voron_stealthburner)
 - Chamber thermistor
 - [Nevermore](https://github.com/nevermore3d/Nevermore_Micro)
@@ -20,25 +19,45 @@ If you have a klicky with the auto-z function then uncomment the line for #CALIB
 
 **For v0:**
 
-- [SuperSlicer](https://github.com/supermerill/SuperSlicer)
 - Chamber thermistor
 - [Nevermore](https://github.com/nevermore3d/Nevermore_Micro)
 
 
-## :warning: Required change in SuperSlicer :warning:
-You will need to make an update in your SuperSlicer to be able to send the data to this macro. In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
+## :warning: Required change in your slicer :warning:
+You will need to make an update in your slicer where you add a line of code in your start-gocde. This will send data about your print temp, bed temp, filament and chamber temp to klipper for each print.
+
+### SuperSlicer
+In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
 ```
+M104 S0 ; Stops SuperSlicer from sending temp waits separately
+M140 S0
 print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]
 ```
 
-![](/images/image1.png) 
+### PrusaSlicer
 
-This will send data about your print temp, bed temp, filament and chamber temp to klipper for each print.
+:warning: PrusaSlicer doesn't give you the option to set a specific chambertemp. Therefor you it will fallback to the standard chambertemp of 40c.
 
-## :warning: Required changes :warning:
+In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
-The print_start macro has pre-defined names for your exhaust, nevermore and chamber thermistor. Therefor you need to make sure that your's are named correctly.
+```
+M104 S0 ; Stops PrusaSlicer from sending temp waits separately
+M140 S0
+print_start EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]}
+```
+
+### Cura
+
+In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and update it to:
+
+```
+print_start EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} FILAMENT={material_type} CHAMBER={build_volume_temperature}
+```
+
+## :warning: Required verification/changes in your printer.cfg :warning:
+
+The print_start macro has predefined names for your exhaust, nevermore and chamber thermistor. Therefor you need to make sure that your's are named correctly.
 
 In your printer.cfg file verify the following:
 
@@ -70,15 +89,14 @@ Replace this macro with your current print_start macro in your printer.cfg
 ```
 #####################################################################
 #   print_start macro
-# To be used with "print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]" in SuperSlicer
 #####################################################################
 
 [gcode_macro PRINT_START]
 gcode:
-  # This part fetches data from SuperSlicer. Such as what bed temp, extruder temp, chamber temp, filament and size of your printer.
+  # This part fetches data from your slicer. Such as what bed temp, extruder temp, chamber temp, filament and size of your printer.
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
-  {% set target_chamber = params.CHAMBER|int %}
+  {% set target_chamber = params.CHAMBER|default("40")|int %}
   {% set filament_type = params.FILAMENT|string %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
@@ -102,12 +120,12 @@ gcode:
     SET_PIN PIN=nevermore VALUE=1                       ; Turn on the nevermore
     G1 X{x_wait} Y{y_wait} Z15 F9000                    ; Go to the center of the bed
     M190 S{target_bed}                                  ; Set the target temp for the bed
-    M117 Soaking ~chamber~ {target_chamber}~degrees~   ; Display info on the display
+    M117 Soaking ~chamber~ {target_chamber}~degrees~    ; Display info on the display
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   ; Wait for chamber to reach desired temp.
 
   # If it's not ABS or ASA it skips the heatsoak and just heat the bed to the target.
   {% else %}
-    M117 Heating ~bed~{target_bed}~degrees~        ; Display info on the display
+    M117 Heating ~bed~{target_bed}~degrees~         ; Display info on the display
     STATUS_HEATING                                  ; Set SB-leds to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                ; Go to the center of the bed
     SET_FAN_SPEED FAN=exhaust_fan SPEED=0.25        ; Turn on the exhaust fan
@@ -115,14 +133,25 @@ gcode:
   {% endif %}
 
   # Heating nozzle to 150 degrees
-  M117 Heating ~extruder~ 150~degrees~   ; Display info on the display
+  M117 Heating ~extruder~ 150~degrees~    ; Display info on the display
   M109 S150                               ; Heat the nozzle to 150c
 
-  # Quad gantry leveling and home Z again after.
-  M117 QGL                        ; Display info on the display
-  STATUS_LEVELING                 ; Set SB-leds to leveling-mode
-  G32                             ; Quad gantry level aka QGL
-  G28 Z                           ; Home Z again after QGL
+
+  # If the script recognizes that you have a z_tilt_adjust script (trident) then use that to level the buildplate.
+  {% if printer.z_tilt_adjust is defined and not printer.z_tilt_adjust.applied %}
+    M117 Z-tilt adjust              ; Display info on the display
+    STATUS_LEVELING                 ; Set SB-leds to leveling-mode
+    Z_TILT_ADJUST                   ; Level the buildplate via z_tilt_adjust
+    G28 Z                           ; Home Z again after z_tilt_adjust
+    {% endif %}
+
+  # If the script recognizes that you have a QGL script (v2) then use that to level the buildplate.
+  {% if printer.quad_gantry_level is defined and not printer.quad_gantry_level.applied %}
+    M117 QGL                        ; Display info on the display
+    STATUS_LEVELING                 ; Set SB-leds to leveling-mode
+    quad_gantry_level               ; Quad gantry level aka QGL
+    G28 Z                           ; Home Z again after QGL
+    {% endif %}
 
   # Uncomment this line below if you're using klicky with the auto z-function
   #CALIBRATE_Z                    ; Calibrate Z-offset with klicky
@@ -134,8 +163,8 @@ gcode:
   bed_mesh_calibrate              ; Start bed mesh
   {% endif %}
 
-  # Heat the nozzle up to target set in SuperSlicer
-  M117 Heating ~extruder~ {target_extruder}~degrees~   ; Display info on the display
+  # Heat the nozzle up to target via slicer
+  M117 Heating ~extruder~ {target_extruder}~degrees~    ; Display info on the display
   STATUS_HEATING                                        ; Set SB-leds to heating-mode
   G1 X{x_wait} Y{y_wait} Z15 F9000                      ; Go to the center of the bed
   M106 S0                                               ; Turn off the PT-fan
@@ -155,15 +184,14 @@ Replace this macro with your current print_start macro in your printer.cfg
 ```
 #####################################################################
 #   print_start macro
-# To be used with "print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]" in SuperSlicer
 #####################################################################
 
 [gcode_macro PRINT_START]
 gcode:
-  # This part fetches data from SuperSlicer. Such as what bed temp, extruder temp, chamber temp, filament and size of your printer.
+  # This part fetches data from your slicer. Such as what bed temp, extruder temp, chamber temp, filament and size of your printer.
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
-  {% set target_chamber = params.CHAMBER|int %}
+  {% set target_chamber = params.CHAMBER|default("40")|int %}
   {% set filament_type = params.FILAMENT|string %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
@@ -186,7 +214,7 @@ gcode:
     M190 S{target_bed}                              ; Set the target temp for the bed
   {% endif %}
 
-  # Heat the nozzle up to target set in SuperSlicer
+  # Heat the nozzle up to target via slicer
   M106 S0                                           ; Turn off the PT-fan
   M109 S{target_extruder}                           ; Heat the nozzle to your print temp
 
