@@ -75,11 +75,11 @@ Replace this macro with your current print_start macro in your printer.cfg
 
 [gcode_macro PRINT_START]
 gcode:
-  # This part fetches data from SuperSlicer. Such as what bed temp, extruder temp, chamber temp and filament.
+  # This part fetches data from SuperSlicer. Such as what bed temp, extruder temp, chamber temp, filament and size of your printer.
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
   {% set target_chamber = params.CHAMBER|int %}
-  {% set filament_type = params.FILAMENT|upper %}
+  {% set filament_type = params.FILAMENT|string %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
@@ -95,7 +95,7 @@ gcode:
 
   # Check what filament we're printing. If it's ABS or ASA we're printing then start a heatsoak.
   {% if filament_type == "ABS" or filament_type == "ASA" %}
-    M117 Heating ~bed~{target_bed}~degrees~            ; Display info on the display
+    M117 Heating ~bed~{target_bed}~degrees~             ; Display info on the display
     STATUS_HEATING                                      ; Set SB-leds to heating-mode
     M106 S255                                           ; Turn on the PT-fan
     SET_FAN_SPEED FAN=exhaust_fan SPEED=0.25            ; Turn on the exhaust fan
@@ -160,11 +160,11 @@ Replace this macro with your current print_start macro in your printer.cfg
 
 [gcode_macro PRINT_START]
 gcode:
-  # This part fetches data from SuperSlicer. Such as what bed temp, extruder temp, chamber temp and filament.
+  # This part fetches data from SuperSlicer. Such as what bed temp, extruder temp, chamber temp, filament and size of your printer.
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
   {% set target_chamber = params.CHAMBER|int %}
-  {% set filament_type = params.FILAMENT|upper %}
+  {% set filament_type = params.FILAMENT|string %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
