@@ -57,7 +57,7 @@ Make sure that nevermore is named "nevermore".
 Make sure that exhaust fan is named "exhaust".
 
 ```
-[output_pin nevermore]
+[output_pin exhaust]
 ```
 
 # The print_start macro for V2/Trident
@@ -165,6 +165,7 @@ gcode:
   {% set filament_type = params.FILAMENT|upper %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
+  
   # Make the printer home and set absolut positioning
   G28                   ; Full home (XYZ)
   G90                   ; Absolut position
