@@ -1,6 +1,6 @@
 # A better print_start macro
 
-**:warning: = This is still in BETA**
+**:warning: This is still in BETA :warning:**
 
 This macro and document aims to help you get a simple but powerful start_macro for your voron printer! With this macro you will be able to pass variables (print temps, chamber temps, filament type) to your print start macro. By doing so you will be able to automatically heatsoak and customize your printers behaviour based upon what material you're printing, 
 
