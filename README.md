@@ -39,21 +39,21 @@ The print_start macro has pre-defined names for your exhaust, nevermore and cham
 
 In your printer.cfg file verify the following:
 
-**Chamber thermistor**
+**Chamber thermistor**:
 Make sure that chamber thermistor is named "chamber".
 
 ```
 [temperature_sensor chamber]
 ```
 
-**Nevermore**
+**Nevermore**:
 Make sure that nevermore is named "nevermore".
 
 ```
 [output_pin nevermore]
 ```
 
-**Exhaust**
+**Exhaust**:
 Make sure that exhaust fan is named "exhaust".
 
 ```
@@ -92,14 +92,14 @@ gcode:
 
   # Check what filament we're printing. If it's ABS or ASA we're printing then start a heatsoak.
   {% if filament_type == "ABS" or filament_type == "ASA" %}
-    M117 Heating: ~bed~{target_bed}~degrees~           ; Display info on the display
-    STATUS_HEATING                                    ; Set SB-leds to heating-mode
-    M106 S255                                         ; Turn on the PT-fan
-    SET_FAN_SPEED FAN=exhaust SPEED=0.25         ; Turn on the exhaust fan
-    SET_PIN PIN=nevermore VALUE=1                   ; Turn on the nevermore
-    G1 X{x_wait} Y{y_wait} Z15 F9000                  ; Go to the center of the bed
-    M190 S{target_bed}                                ; Set the target temp for the bed
-    M117 Soaking ~chamber~: {target_chamber}~degrees~  ; Display info on the display
+    M117 Heating: ~bed~{target_bed}~degrees~            ; Display info on the display
+    STATUS_HEATING                                      ; Set SB-leds to heating-mode
+    M106 S255                                           ; Turn on the PT-fan
+    SET_FAN_SPEED FAN=exhaust SPEED=0.25                ; Turn on the exhaust fan
+    SET_PIN PIN=nevermore VALUE=1                       ; Turn on the nevermore
+    G1 X{x_wait} Y{y_wait} Z15 F9000                    ; Go to the center of the bed
+    M190 S{target_bed}                                  ; Set the target temp for the bed
+    M117 Soaking ~chamber~: {target_chamber}~degrees~   ; Display info on the display
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   ; Wait for chamber to reach desired temp
 
   # If it's not ABS or ASA it skips the heatsoak and just heat the bed to the target.
@@ -107,7 +107,7 @@ gcode:
     M117 Heating: ~bed~{target_bed}~degrees~         ; Display info on the display
     STATUS_HEATING                                  ; Set SB-leds to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                ; Go to the center of the bed
-    SET_FAN_SPEED FAN=exhaust SPEED=0.25       ; Turn on the exhaust fan
+    SET_FAN_SPEED FAN=exhaust SPEED=0.25            ; Turn on the exhaust fan
     M190 S{target_bed}                              ; Set the target temp for the bed
   {% endif %}
 
@@ -184,8 +184,8 @@ gcode:
   {% endif %}
 
   # Heat the nozzle up to target set in SuperSlicer
-  M106 S0                                               ; Turn off the PT-fan
-  M109 S{target_extruder}                               ; Heat the nozzle to your print temp
+  M106 S0                                           ; Turn off the PT-fan
+  M109 S{target_extruder}                           ; Heat the nozzle to your print temp
 
   # Get ready to print
   G1 X25 Y5 Z10 F15000          ; Go to X25 and Y5
