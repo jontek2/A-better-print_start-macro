@@ -136,7 +136,7 @@ gcode:
 
   # If it's not ABS or ASA it skips the heatsoak and just heats the bed to the target.
   {% else %}
-    M117 Heating bed: target_bed}c                  # Display info on the display
+    M117 Heating bed: {target_bed}c                 # Display info on the display
     STATUS_HEATING                                  # Set SB-leds to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                # Go to the center of the bed
     M190 S{target_bed}                              # Set the target temp for the bed
