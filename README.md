@@ -171,9 +171,9 @@ gcode:
   #CALIBRATE_Z                    # Calibrate Z-offset with klicky
 
   ##  Uncomment for bed mesh (2 of 2)
-  M117 Bed mesh                   # Display info on the display
-  STATUS_MESHING                  # Set SB-leds to bed mesh-mode
-  bed_mesh_calibrate              # Start bed mesh
+  #M117 Bed mesh                   # Display info on the display
+  #STATUS_MESHING                  # Set SB-leds to bed mesh-mode
+  #bed_mesh_calibrate              # Start bed mesh
 
   # Heat the nozzle up to target via data from slicer
   M117 Heating ~extruder~ {target_extruder}~degrees~    # Display info on the display
