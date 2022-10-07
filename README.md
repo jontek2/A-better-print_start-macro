@@ -204,7 +204,10 @@ gcode:
   # Check what filament we're printing. If it's ABS or ASA we're printing then start a heatsoak.
   {% if filament_type == "ABS" or filament_type == "ASA" %}
     M106 S255                                         # Turn on the PT-fan
-    SET_PIN PIN=nevermore VALUE=1                     # Turn on the nevermore
+
+    ##  Uncomment if you have a Nevermore.
+    #SET_PIN PIN=nevermore VALUE=1                      # Turn on the nevermore
+    
     G1 X{x_wait} Y{y_wait} Z15 F9000                  # Go to the center of the bed
     M190 S{target_bed}                                # Set the target temp for the bed
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber to reach desired temp
