@@ -20,14 +20,17 @@ Each command has a comment next to it explaining what it does. Make sure to read
 
  Other requirements:
 
-- [Stealthburner](https://vorondesign.com/voron_stealthburner)
-- Chamber thermistor
+  - [Stealthburner](https://vorondesign.com/voron_stealthburner)
+  - Chamber thermistor
 
 ### For v0
 
-- Chamber thermistor
-- [Nevermore](https://github.com/nevermore3d/Nevermore_Micro)
+ Just like you did in printer.cfg you will need to go through and uncomment parts of the script in order to make it work with your printer:
 
+ - [Nevermore](https://github.com/nevermore3d/Nevermore_Micro) - if you have one
+
+Other requirements:
+  - Chamber thermistor
 
 ## :warning: Required change in your slicer :warning:
 You will need to make an update in your slicer where you add a line of code in your start-gocde. This will send data about your print temp, bed temp, filament and chamber temp to klipper for each print.
@@ -207,7 +210,7 @@ gcode:
 
     ##  Uncomment if you have a Nevermore.
     #SET_PIN PIN=nevermore VALUE=1                      # Turn on the nevermore
-    
+
     G1 X{x_wait} Y{y_wait} Z15 F9000                  # Go to the center of the bed
     M190 S{target_bed}                                # Set the target temp for the bed
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber to reach desired temp
