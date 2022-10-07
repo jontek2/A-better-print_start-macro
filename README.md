@@ -17,7 +17,6 @@ Each command has a comment next to it explaining what it does. Make sure to read
  - Screw_tilt_adjust if your printer is a Trident
  - Quad gantry level if your printer is a V2
  - [Nevermore](https://github.com/nevermore3d/Nevermore_Micro) - if you have one
- - Exhaust fan - if you have one
 
  Other requirements:
 
@@ -64,7 +63,7 @@ print_start EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temp
 
 ## :warning: Required verification/changes in your printer.cfg :warning:
 
-The print_start macro has predefined names for your exhaust, nevermore and chamber thermistor. Therefor you need to make sure that your's are named correctly.
+The print_start macro has predefined names for nevermore and chamber thermistor. Therefor you need to make sure that your's are named correctly.
 
 In your printer.cfg file verify the following:
 
@@ -85,16 +84,6 @@ value: 0
 shutdown_value: 0
 ```
 
-**Exhaust**:
-Make sure that exhaust fan is named "exhaust_fan".
-
-```
-[fan_generic exhaust_fan]
-pin: XXX
-max_power: 1.0
-shutdown_speed: 0.0
-```
-
 # The print_start macro for V2/Trident
 
 As mentioned above you will need to uncomment parts of this macro for it to work on your V2 or Trident. Replace this macro with your current print_start macro in your printer.cfg
@@ -109,7 +98,6 @@ As mentioned above you will need to uncomment parts of this macro for it to work
 ## Screw_tilt_adjust if your printer is a Trident
 ## Quad gantry level if your printer is a V2
 ## Nevermore - if you have one
-## Exhaust fan - if you have one
 
 [gcode_macro PRINT_START]
 gcode:
@@ -131,7 +119,7 @@ gcode:
 
   # Checks filament and if it's ABS or ASA then start heatsoak.
   {% if filament_type == "ABS" or filament_type == "ASA" %}
-    M117 Heating ~bed~{target_bed}~degrees~             # Display info on the display
+    M117 Heating bed: {target_bed}                      # Display info on the display
     STATUS_HEATING                                      # Set SB-leds to heating-mode
     M106 S255                                           # Turn on the PT-fan
 
@@ -140,19 +128,20 @@ gcode:
 
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to the center of the bed
     M190 S{target_bed}                                  # Set the target temp for the bed
-    M117 Soaking ~chamber~ {target_chamber}~degrees~    # Display info on the display
+    M117 Heatsoaking to: {target_chamber}c              # Display info on the display
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber to reach desired temp.
 
   # If it's not ABS or ASA it skips the heatsoak and just heats the bed to the target.
   {% else %}
-    M117 Heating ~bed~{target_bed}~degrees~         # Display info on the display
+    M117 Heating bed: target_bed}c                  # Display info on the display
     STATUS_HEATING                                  # Set SB-leds to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                # Go to the center of the bed
     M190 S{target_bed}                              # Set the target temp for the bed
+    G4 P300000                                      # Wait 5 min for the bedtemp to stabilize
   {% endif %}
 
   # Heating nozzle to 150 degrees. This helps with getting a correct Z-home.
-  M117 Heating ~extruder~ 150~degrees~    # Display info on the display
+  M117 Heating hotend: 150c               # Display info on the display
   M109 S150                               # Heats the nozzle to 150c
 
   ##  Uncomment for Trident (screw_tilt_adjust)
@@ -176,14 +165,11 @@ gcode:
   #bed_mesh_calibrate              # Start bed mesh
 
   # Heat the nozzle up to target via data from slicer
-  M117 Heating ~extruder~ {target_extruder}~degrees~    # Display info on the display
+  M117 Heating hotend: {target_extruder}                # Display info on the display
   STATUS_HEATING                                        # Set SB-leds to heating-mode
   G1 X{x_wait} Y{y_wait} Z15 F9000                      # Go to the center of the bed
-  M106 S0                                               # Turn off the PT-fan
+  M107                                                  # Turn off partcooling fan
   M109 S{target_extruder}                               # Heat the nozzle to your print temp
-
-  ##  Uncomment if you have an exhaust
-  #SET_FAN_SPEED FAN=exhaust_fan SPEED=0.25             # Turn on the exhaust fan
 
   # Get ready to print by going to the front of the printer and updating Stealthburner LEDs.
   M117 Print started!           # Display info on the display
@@ -227,16 +213,21 @@ gcode:
   {% else %}
     G1 X{x_wait} Y{y_wait} Z15 F9000                # Go to the center of the bed
     M190 S{target_bed}                              # Set the target temp for the bed
+    G4 P300000                                      # Wait 5 min for the bedtemp to stabilize
   {% endif %}
 
   # Heat the nozzle up to target via slicer
-  M106 S0                                           # Turn off the PT-fan
+  M107                                              # Turn off the PT-fan
   M109 S{target_extruder}                           # Heat the nozzle to your print temp
 
   # Get ready to print
   G1 X25 Y5 Z10 F15000          # Go to X25 and Y5
   G92 E0.0                      # Set position 
 ```
+## Credits
+
+Credits to the Voron supportteam for making this!
+
 
 ### Feedback
 
