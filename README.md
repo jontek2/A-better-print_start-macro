@@ -9,7 +9,7 @@ Each command has a comment next to it explaining what it does. Make sure to read
 
 ## Requirements
 
-**For V2/Trident:**
+###For V2/Trident
 
  Just like you did in printer.cfg you will need to go through and uncomment parts of the script in order to make it work with your printer:
 
@@ -24,7 +24,7 @@ Each command has a comment next to it explaining what it does. Make sure to read
 - [Stealthburner](https://vorondesign.com/voron_stealthburner)
 - Chamber thermistor
 
-**For v0:**
+###For v0
 
 - Chamber thermistor
 - [Nevermore](https://github.com/nevermore3d/Nevermore_Micro)
@@ -183,7 +183,7 @@ gcode:
   M109 S{target_extruder}                               # Heat the nozzle to your print temp
 
   ##  Uncomment if you have an exhaust
-  #SET_FAN_SPEED FAN=exhaust_fan SPEED=0.25            # Turn on the exhaust fan
+  #SET_FAN_SPEED FAN=exhaust_fan SPEED=0.25             # Turn on the exhaust fan
 
   # Get ready to print by going to the front of the printer and updating Stealthburner LEDs.
   M117 Print started!           # Display info on the display
