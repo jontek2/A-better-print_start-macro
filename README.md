@@ -2,7 +2,7 @@
 
 **:warning: This is still in BETA :warning:**
 
-This documents aitom to help you to get a better, simple and powerful print_start macro for your Voron printer. With this macro you will be able to pass variables (print temps and chamber temps) to your print_start macro. By doing so you will be able to automatically heatsoak and customize your printers behaviour. 
+This documents aitom to help you to get a better, simple and powerful print_start macro for your Voron printer. With this macro you will be able to pass variables (print temps and chamber temps) to your print_start macro. By doing so you will be able to automatically heatsoak and customize your printers behaviour. The heatsoak will start when you've sliced a print with a bed temp higher than 90c. It will then heatsoak to your set chamber temp. If no chamber temp is set it will fallback to the macros standard chambertemp of 40c. 
 
 Each command has a comment next to it explaining what it does. Make sure to read through the macro and get an understanding of what it does.
 
@@ -11,7 +11,7 @@ Each command has a comment next to it explaining what it does. Make sure to read
 
 ### For V2/Trident
 
- Just like you did in printer.cfg you will need to go through and uncomment parts of the script in order to make it work with your printer:
+ Just like you did in printer.cfg you will need to go through and uncomment parts of the macro in order to make it work with your printer:
 
  - Bed mesh (2 lines at 2 locations)
  - Screw_tilt_adjust if your printer is a Trident
@@ -25,7 +25,7 @@ Each command has a comment next to it explaining what it does. Make sure to read
 
 ### For v0
 
- Just like you did in printer.cfg you will need to go through and uncomment parts of the script in order to make it work with your printer:
+ Just like you did in printer.cfg you will need to go through and uncomment parts of the macro in order to make it work with your printer:
 
  - [Nevermore](https://github.com/nevermore3d/Nevermore_Micro) - if you have one
 
@@ -75,6 +75,8 @@ Make sure that chamber thermistor is named "chamber".
 
 ```
 [temperature_sensor chamber]
+sensor_type:  XXX
+sensor_pin:   XXX
 ```
 
 **Nevermore**:
@@ -119,7 +121,7 @@ gcode:
   ##  Uncomment for bed mesh (1 of 2)
   #BED_MESH_CLEAR       # Clear old saved bed mesh
 
-  # Checks if the bed temp is higher than 90c, then trigger a heatsoak.
+  # Checks if the bed temp is higher than 90c then trigger a heatsoak.
   {% if BED|int < 90 %}
     M117 Heating bed: {target_bed}                      # Display info on the display
     STATUS_HEATING                                      # Set SB-leds to heating-mode
@@ -189,6 +191,9 @@ Replace this macro with your current print_start macro in your printer.cfg
 #   print_start macro
 #####################################################################
 
+## *** THINGS TO UNCOMMENT: ***
+## Nevermore - if you have one
+
 [gcode_macro PRINT_START]
 gcode:
   # This part fetches data from your slicer. Such as what bed temp, extruder temp, chamber temp and size of your printer.
@@ -202,18 +207,18 @@ gcode:
   G28                   # Full home (XYZ)
   G90                   # Absolut position
 
-  # Checks if the bed temp is higher than 90c, then trigger a heatsoak.
+  # Checks if the bed temp is higher than 90c then trigger a heatsoak.
   {% if BED|int < 90 %}
     M106 S255                                         # Turn on the PT-fan
 
     ##  Uncomment if you have a Nevermore.
-    #SET_PIN PIN=nevermore VALUE=1                      # Turn on the nevermore
+    #SET_PIN PIN=nevermore VALUE=1                    # Turn on the nevermore
 
     G1 X{x_wait} Y{y_wait} Z15 F9000                  # Go to the center of the bed
     M190 S{target_bed}                                # Set the target temp for the bed
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber to reach desired temp
 
-  # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak.
+  # If the bed temp is not over 90c then it skips the heatsoak and just heats up to set temp with a 5min soak.
   {% else %}
     G1 X{x_wait} Y{y_wait} Z15 F9000                # Go to the center of the bed
     M190 S{target_bed}                              # Set the target temp for the bed
