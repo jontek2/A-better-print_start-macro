@@ -2,7 +2,7 @@
 
 **:warning: This is still in BETA :warning:**
 
-This documents aitom to help you to get a better, simple and powerful print_start macro for your Voron printer. With this macro you will be able to pass variables (print temps, chamber temps, filament type) to your print_start macro. By doing so you will be able to automatically heatsoak and customize your printers behaviour based upon what material you're printing, 
+This documents aitom to help you to get a better, simple and powerful print_start macro for your Voron printer. With this macro you will be able to pass variables (print temps and chamber temps) to your print_start macro. By doing so you will be able to automatically heatsoak and customize your printers behaviour. 
 
 Each command has a comment next to it explaining what it does. Make sure to read through the macro and get an understanding of what it does.
 
@@ -33,7 +33,7 @@ Other requirements:
   - Chamber thermistor
 
 ## :warning: Required change in your slicer :warning:
-You will need to make an update in your slicer where you add a line of code in your start-gocde. This will send data about your print temp, bed temp, filament and chamber temp to klipper for each print.
+You will need to make an update in your slicer where you add a line of code in your start-gocde. This will send data about your print temp, bed temp and chamber temp to klipper for each print.
 
 ### SuperSlicer
 In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
@@ -41,7 +41,7 @@ In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and
 ```
 M104 S0 ; Stops SuperSlicer from sending temp waits separately
 M140 S0
-print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]} CHAMBER=[chamber_temperature]
+print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
 ```
 
 ### PrusaSlicer
@@ -53,7 +53,7 @@ In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and
 ```
 M104 S0 ; Stops PrusaSlicer from sending temp waits separately
 M140 S0
-print_start EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] FILAMENT={filament_type[0]}
+print_start EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature]
 ```
 
 ### Cura
@@ -61,7 +61,7 @@ print_start EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_laye
 In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and update it to:
 
 ```
-print_start EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} FILAMENT={material_type} CHAMBER={build_volume_temperature}
+print_start EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature}
 ```
 
 ## :warning: Required verification/changes in your printer.cfg :warning:
@@ -104,11 +104,10 @@ As mentioned above you will need to uncomment parts of this macro for it to work
 
 [gcode_macro PRINT_START]
 gcode:
-  # This part fetches data from your slicer. Such as what bed temp, extruder temp, chamber temp, filament and size of your printer.
+  # This part fetches data from your slicer. Such as what bed temp, extruder temp, chamber temp and size of your printer.
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
   {% set target_chamber = params.CHAMBER|default("40")|int %}
-  {% set filament_type = params.FILAMENT|string %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
@@ -120,8 +119,8 @@ gcode:
   ##  Uncomment for bed mesh (1 of 2)
   #BED_MESH_CLEAR       # Clear old saved bed mesh
 
-  # Checks filament and if it's ABS or ASA then start heatsoak.
-  {% if filament_type == "ABS" or filament_type == "ASA" %}
+  # Checks if the bed temp is higher than 90c, then trigger a heatsoak.
+  {% if BED|int < 90 %}
     M117 Heating bed: {target_bed}                      # Display info on the display
     STATUS_HEATING                                      # Set SB-leds to heating-mode
     M106 S255                                           # Turn on the PT-fan
@@ -134,7 +133,7 @@ gcode:
     M117 Heatsoaking to: {target_chamber}c              # Display info on the display
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber to reach desired temp.
 
-  # If it's not ABS or ASA it skips the heatsoak and just heats the bed to the target.
+  # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak.
   {% else %}
     M117 Heating bed: {target_bed}c                 # Display info on the display
     STATUS_HEATING                                  # Set SB-leds to heating-mode
@@ -192,11 +191,10 @@ Replace this macro with your current print_start macro in your printer.cfg
 
 [gcode_macro PRINT_START]
 gcode:
-  # This part fetches data from your slicer. Such as what bed temp, extruder temp, chamber temp, filament and size of your printer.
+  # This part fetches data from your slicer. Such as what bed temp, extruder temp, chamber temp and size of your printer.
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
   {% set target_chamber = params.CHAMBER|default("40")|int %}
-  {% set filament_type = params.FILAMENT|string %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
@@ -204,8 +202,8 @@ gcode:
   G28                   # Full home (XYZ)
   G90                   # Absolut position
 
-  # Check what filament we're printing. If it's ABS or ASA we're printing then start a heatsoak.
-  {% if filament_type == "ABS" or filament_type == "ASA" %}
+  # Checks if the bed temp is higher than 90c, then trigger a heatsoak.
+  {% if BED|int < 90 %}
     M106 S255                                         # Turn on the PT-fan
 
     ##  Uncomment if you have a Nevermore.
@@ -215,7 +213,7 @@ gcode:
     M190 S{target_bed}                                # Set the target temp for the bed
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber to reach desired temp
 
-# If it's not ABS or ASA it skips the heatsoak and just heat the bed to the target.
+  # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak.
   {% else %}
     G1 X{x_wait} Y{y_wait} Z15 F9000                # Go to the center of the bed
     M190 S{target_bed}                              # Set the target temp for the bed
