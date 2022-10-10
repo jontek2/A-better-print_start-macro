@@ -123,7 +123,7 @@ gcode:
 
   # Checks if the bed temp is higher than 90c then trigger a heatsoak.
   {% if params.BED|int > 90 %}
-    M117 Heating bed: {target_bed}                      # Display info on the display
+    SET_DISPLAY_TEXT MSG="Heating bed: {target_bed}"    # Display info on the display
     STATUS_HEATING                                      # Set SB-leds to heating-mode
     M106 S255                                           # Turn on the PT-fan
 
@@ -132,12 +132,12 @@ gcode:
 
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to the center of the bed
     M190 S{target_bed}                                  # Set the target temp for the bed
-    M117 Heatsoaking to: {target_chamber}c              # Display info on the display
+    SET_DISPLAY_TEXT MSG="Heatsoaking to: {target_chamber}c"                        # Display info on the display
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber to reach desired temp.
 
   # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak.
   {% else %}
-    M117 Heating bed: {target_bed}c                 # Display info on the display
+    SET_DISPLAY_TEXT MSG="Heating bed: {target_bed}c"                 # Display info on the display
     STATUS_HEATING                                  # Set SB-leds to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                # Go to the center of the bed
     M190 S{target_bed}                              # Set the target temp for the bed
@@ -145,17 +145,17 @@ gcode:
   {% endif %}
 
   # Heating nozzle to 150 degrees. This helps with getting a correct Z-home.
-  M117 Heating hotend: 150c               # Display info on the display
-  M109 S150                               # Heats the nozzle to 150c
+  SET_DISPLAY_TEXT MSG="Heating hotend: 150c"          # Display info on the display
+  M109 S150                                            # Heats the nozzle to 150c
 
   ##  Uncomment for Trident (screw_tilt_adjust)
-  #M117 Z-tilt adjust              # Display info on the display
-  #STATUS_LEVELING                 # Set SB-leds to leveling-mode
-  #Z_TILT_ADJUST                   # Level the buildplate via z_tilt_adjust
-  #G28 Z                           # Home Z again after z_tilt_adjust
+  #SET_DISPLAY_TEXT MSG="Z-tilt adjust"     # Display info on the display
+  #STATUS_LEVELING                          # Set SB-leds to leveling-mode
+  #Z_TILT_ADJUST                            # Level the buildplate via z_tilt_adjust
+  #G28 Z                                    # Home Z again after z_tilt_adjust
 
   ##  Uncomment for V2 (Quad gantry level AKA QGL)
-  #M117 QGL                        # Display info on the display
+  #SET_DISPLAY_TEXT MSG="QGL"      # Display info on the display
   #STATUS_LEVELING                 # Set SB-leds to leveling-mode
   #quad_gantry_level               # Quad gantry level aka QGL
   #G28 Z                           # Home Z again after QGL
@@ -164,23 +164,23 @@ gcode:
   #CALIBRATE_Z                    # Calibrate Z-offset with klicky
 
   ##  Uncomment for bed mesh (2 of 2)
-  #M117 Bed mesh                   # Display info on the display
-  #STATUS_MESHING                  # Set SB-leds to bed mesh-mode
-  #bed_mesh_calibrate              # Start bed mesh
+  #SET_DISPLAY_TEXT MSG="Bed mesh"    # Display info on the display
+  #STATUS_MESHING                     # Set SB-leds to bed mesh-mode
+  #bed_mesh_calibrate                 # Start bed mesh
 
   # Heat the nozzle up to target via data from slicer
-  M117 Heating hotend: {target_extruder}                # Display info on the display
-  STATUS_HEATING                                        # Set SB-leds to heating-mode
-  G1 X{x_wait} Y{y_wait} Z15 F9000                      # Go to the center of the bed
-  M107                                                  # Turn off partcooling fan
-  M109 S{target_extruder}                               # Heat the nozzle to your print temp
+  SET_DISPLAY_TEXT MSG="Heating hotend: {target_extruder}c"     # Display info on the display
+  STATUS_HEATING                                                # Set SB-leds to heating-mode
+  G1 X{x_wait} Y{y_wait} Z15 F9000                              # Go to the center of the bed
+  M107                                                          # Turn off partcooling fan
+  M109 S{target_extruder}                                       # Heat the nozzle to your print temp
 
   # Get ready to print by going to the front of the printer and updating Stealthburner LEDs.
-  M117 Print started!           # Display info on the display
-  STATUS_READY                  # Set SB-leds to ready-mode
-  G1 X25 Y5 Z10 F15000          # Go to X25 and Y5
-  STATUS_PRINTING               # Set SB-leds to printing-mode
-  G92 E0.0                      # Set position 
+  SET_DISPLAY_TEXT MSG="Printer goes brr"           # Display info on the display
+  STATUS_READY                                     # Set SB-leds to ready-mode
+  G1 X25 Y5 Z10 F15000                             # Go to X25 and Y5
+  STATUS_PRINTING                                  # Set SB-leds to printing-mode
+  G92 E0.0                                         # Set position 
 ```
 
 # The print_start macro for v0
