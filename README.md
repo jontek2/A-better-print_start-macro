@@ -122,7 +122,7 @@ gcode:
   #BED_MESH_CLEAR       # Clear old saved bed mesh
 
   # Checks if the bed temp is higher than 90c then trigger a heatsoak.
-  {% if BED|int < 90 %}
+  {% if params.BED|int > 90 %}
     M117 Heating bed: {target_bed}                      # Display info on the display
     STATUS_HEATING                                      # Set SB-leds to heating-mode
     M106 S255                                           # Turn on the PT-fan
@@ -208,7 +208,7 @@ gcode:
   G90                   # Absolut position
 
   # Checks if the bed temp is higher than 90c then trigger a heatsoak.
-  {% if BED|int < 90 %}
+  {% if params.BED|int > 90 %}
     M106 S255                                         # Turn on the PT-fan
 
     ##  Uncomment if you have a Nevermore.
