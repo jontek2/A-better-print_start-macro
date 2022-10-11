@@ -2,7 +2,7 @@
 
 **:warning: This is still in BETA :warning:**
 
-This documents aitom to help you to get a better, simple and powerful print_start macro for your Voron printer. With this macro you will be able to pass variables (print temps and chamber temps) to your print_start macro. By doing so you will be able to automatically heatsoak and customize your printers behaviour. The heatsoak will start when you've sliced a print with a bed temp higher than 90c. It will then heatsoak to your set chamber temp. If no chamber temp is set it will fallback to the macros standard chambertemp of 40c. 
+This documents aims to help you to get a better, simple and powerful print_start macro for your Voron printer. With this macro you will be able to pass variables (print temps and chamber temps) to your print_start macro. By doing so you will be able to automatically heatsoak and customize your printers behaviour. The heatsoak will start when you've sliced a print with a bed temp higher than 90c. It will then heatsoak to your set chamber temp. If no chamber temp is set it will fallback to the macros standard chambertemp of 40c. 
 
 Each command has a comment next to it explaining what it does. Make sure to read through the macro and get an understanding of what it does.
 
@@ -33,7 +33,7 @@ Other requirements:
   - Chamber thermistor
 
 ## :warning: Required change in your slicer :warning:
-You will need to make an update in your slicer where you add a line of code in your start-gocde. This will send data about your print temp, bed temp and chamber temp to klipper for each print.
+You will need to make an update in your slicer where you add a line of code in your start-gocde. This will send data about your print temps and chamber temp to klipper for each print.
 
 ### SuperSlicer
 In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
@@ -119,7 +119,7 @@ gcode:
   G90                   # Absolut position
 
   ##  Uncomment for bed mesh (1 of 2)
-  #BED_MESH_CLEAR       # Clear old saved bed mesh
+  #BED_MESH_CLEAR       # Clear old saved bed mesh (if any)
 
   # Checks if the bed temp is higher than 90c then trigger a heatsoak.
   {% if params.BED|int > 90 %}
@@ -141,6 +141,7 @@ gcode:
     STATUS_HEATING                                  # Set SB-leds to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                # Go to the center of the bed
     M190 S{target_bed}                              # Set the target temp for the bed
+    SET_DISPLAY_TEXT MSG="Wait for 5min"            # Display info on the display
     G4 P300000                                      # Wait 5 min for the bedtemp to stabilize
   {% endif %}
 
@@ -161,7 +162,8 @@ gcode:
   #G28 Z                           # Home Z again after QGL
 
   ##  Uncomment for Klicky auto-z
-  #CALIBRATE_Z                    # Calibrate Z-offset with klicky
+  #CALIBRATE_Z                                 # Calibrate Z-offset with klicky
+  #SET_DISPLAY_TEXT MSG="Calibrate Z-offset"   # Display info on the display
 
   ##  Uncomment for bed mesh (2 of 2)
   #SET_DISPLAY_TEXT MSG="Bed mesh"    # Display info on the display
@@ -176,7 +178,7 @@ gcode:
   M109 S{target_extruder}                                       # Heat the nozzle to your print temp
 
   # Get ready to print by going to the front of the printer and updating Stealthburner LEDs.
-  SET_DISPLAY_TEXT MSG="Printer goes brr"           # Display info on the display
+  SET_DISPLAY_TEXT MSG="Printer goes brr"          # Display info on the display
   STATUS_READY                                     # Set SB-leds to ready-mode
   G1 X25 Y5 Z10 F15000                             # Go to X25 and Y5
   STATUS_PRINTING                                  # Set SB-leds to printing-mode
@@ -185,7 +187,8 @@ gcode:
 
 # The print_start macro for v0
 
-Replace this macro with your current print_start macro in your printer.cfg
+As mentioned above you will need to uncomment parts of this macro for it to work on your v0. Replace this macro with your current print_start macro in your printer.cfg
+
 ```
 #####################################################################
 #   print_start macro
