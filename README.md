@@ -2,9 +2,9 @@
 
 **:warning: This is still in BETA :warning:**
 
-This documents aims to help you to get a better, simple and powerful print_start macro for your Voron printer. With this macro you will be able to pass variables (print temps and chamber temps) to your print_start macro. By doing so you will be able to automatically heatsoak and customize your printers behaviour. The heatsoak will start when you've sliced a print with a bed temp higher than 90c. It will then heatsoak to your set chamber temp. If no chamber temp is set it will fallback to the macros standard chambertemp of 40c. 
+This documents aims to help you get a better, simple and powerful print_start macro for your Voron printer. With this macro you will be able to pass variables such as print temps and chamber temps to your print_start macro. By doing so you will be able to automatically start a heatsoak and customize your printers behaviour. The heatsoak will start when you've sliced a print with a bed temp higher than 90c. It will then heatsoak to your set chamber temp. If no chamber temp is set it will fallback to the macros standard chambertemp of 40c. 
 
-Each command has a comment next to it explaining what it does. Make sure to read through the macro and get an understanding of what it does.
+Each command has a comment next to it explaining what it does. Make sure to read through the macro and get an understanding of what it.
 
 
 ## Requirements
@@ -33,7 +33,7 @@ Other requirements:
   - Chamber thermistor
 
 ## :warning: Required change in your slicer :warning:
-You will need to make an update in your slicer where you add a line of code in your start-gocde. This will send data about your print temps and chamber temp to klipper for each print.
+You need to update your "Start g-code" in your slicer by adding a few lines of code. This will send data about your print temps and chamber temp to klipper for each print.
 
 ### SuperSlicer
 In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
@@ -106,14 +106,14 @@ As mentioned above you will need to uncomment parts of this macro for it to work
 
 [gcode_macro PRINT_START]
 gcode:
-  # This part fetches data from your slicer. Such as what bed temp, extruder temp, chamber temp and size of your printer.
+  # This part fetches data from your slicer. Such as bed temp, extruder temp, chamber temp and size of your printer.
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
   {% set target_chamber = params.CHAMBER|default("40")|int %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
-  # Homes the printer, set absolute positioning and update the Stealthburner leds.
+  # Homes the printer, sets absolute positioning and updates the Stealthburner leds.
   STATUS_HOMING         # Set SB-leds to homing-mode
   G28                   # Full home (XYZ)
   G90                   # Absolut position
@@ -121,31 +121,31 @@ gcode:
   ##  Uncomment for bed mesh (1 of 2)
   #BED_MESH_CLEAR       # Clear old saved bed mesh (if any)
 
-  # Checks if the bed temp is higher than 90c then trigger a heatsoak.
+  # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak.
   {% if params.BED|int > 90 %}
     SET_DISPLAY_TEXT MSG="Heating bed: {target_bed}"    # Display info on the display
     STATUS_HEATING                                      # Set SB-leds to heating-mode
-    M106 S255                                           # Turn on the PT-fan
+    M106 S255                                           # Turns on the PT-fan
 
     ##  Uncomment if you have a Nevermore.
-    #SET_PIN PIN=nevermore VALUE=1                      # Turn on the nevermore
+    #SET_PIN PIN=nevermore VALUE=1                      # Turns on the nevermore
 
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to the center of the bed
     M190 S{target_bed}                                  # Set the target temp for the bed
     SET_DISPLAY_TEXT MSG="Heatsoaking to: {target_chamber}c"                        # Display info on the display
-    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber to reach desired temp.
+    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber to reach desired temp
 
-  # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak.
+  # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak
   {% else %}
-    SET_DISPLAY_TEXT MSG="Heating bed: {target_bed}c"                 # Display info on the display
-    STATUS_HEATING                                  # Set SB-leds to heating-mode
-    G1 X{x_wait} Y{y_wait} Z15 F9000                # Go to the center of the bed
-    M190 S{target_bed}                              # Set the target temp for the bed
-    SET_DISPLAY_TEXT MSG="Wait for 5min"            # Display info on the display
-    G4 P300000                                      # Wait 5 min for the bedtemp to stabilize
+    SET_DISPLAY_TEXT MSG="Heating bed: {target_bed}c"   # Display info on the display
+    STATUS_HEATING                                      # Set SB-leds to heating-mode
+    G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to the center of the bed
+    M190 S{target_bed}                                  # Set the target temp for the bed
+    SET_DISPLAY_TEXT MSG="Wait for 5min"                # Display info on the display
+    G4 P300000                                          # Wait 5 min for the bedtemp to stabilize
   {% endif %}
 
-  # Heating nozzle to 150 degrees. This helps with getting a correct Z-home.
+  # Heating nozzle to 150 degrees. This helps with getting a correct Z-home
   SET_DISPLAY_TEXT MSG="Heating hotend: 150c"          # Display info on the display
   M109 S150                                            # Heats the nozzle to 150c
 
@@ -158,7 +158,7 @@ gcode:
   ##  Uncomment for V2 (Quad gantry level AKA QGL)
   #SET_DISPLAY_TEXT MSG="QGL"      # Display info on the display
   #STATUS_LEVELING                 # Set SB-leds to leveling-mode
-  #quad_gantry_level               # Quad gantry level aka QGL
+  #quad_gantry_level               # Level the buildplate via QGL
   #G28 Z                           # Home Z again after QGL
 
   ##  Uncomment for Klicky auto-z
@@ -170,14 +170,14 @@ gcode:
   #STATUS_MESHING                     # Set SB-leds to bed mesh-mode
   #bed_mesh_calibrate                 # Start bed mesh
 
-  # Heat the nozzle up to target via data from slicer
+  # Heats up the nozzle up to target via data from slicer
   SET_DISPLAY_TEXT MSG="Heating hotend: {target_extruder}c"     # Display info on the display
   STATUS_HEATING                                                # Set SB-leds to heating-mode
   G1 X{x_wait} Y{y_wait} Z15 F9000                              # Go to the center of the bed
   M107                                                          # Turn off partcooling fan
   M109 S{target_extruder}                                       # Heat the nozzle to your print temp
 
-  # Get ready to print by going to the front of the printer and updating Stealthburner LEDs.
+  # Gets ready to print by going to the front of the printer and updating Stealthburner LEDs
   SET_DISPLAY_TEXT MSG="Printer goes brr"          # Display info on the display
   STATUS_READY                                     # Set SB-leds to ready-mode
   G1 X25 Y5 Z10 F15000                             # Go to X25 and Y5
@@ -199,23 +199,23 @@ As mentioned above you will need to uncomment parts of this macro for it to work
 
 [gcode_macro PRINT_START]
 gcode:
-  # This part fetches data from your slicer. Such as what bed temp, extruder temp, chamber temp and size of your printer.
+  # This part fetches data from your slicer. Such as bed temp, extruder temp, chamber temp and size of your printer.
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
   {% set target_chamber = params.CHAMBER|default("40")|int %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
-  # Make the printer home and set absolut positioning
+  # Homes the printer and sets absolute positioning
   G28                   # Full home (XYZ)
   G90                   # Absolut position
 
-  # Checks if the bed temp is higher than 90c then trigger a heatsoak.
+  # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak
   {% if params.BED|int > 90 %}
-    M106 S255                                         # Turn on the PT-fan
+    M106 S255                                         # Turns on the PT-fan
 
     ##  Uncomment if you have a Nevermore.
-    #SET_PIN PIN=nevermore VALUE=1                    # Turn on the nevermore
+    #SET_PIN PIN=nevermore VALUE=1                    # Turns on the nevermore
 
     G1 X{x_wait} Y{y_wait} Z15 F9000                  # Go to the center of the bed
     M190 S{target_bed}                                # Set the target temp for the bed
@@ -228,17 +228,25 @@ gcode:
     G4 P300000                                      # Wait 5 min for the bedtemp to stabilize
   {% endif %}
 
-  # Heat the nozzle up to target via slicer
-  M107                                              # Turn off the PT-fan
-  M109 S{target_extruder}                           # Heat the nozzle to your print temp
+  # Heats up the nozzle up to target via slicer
+  M107                                              # Turns off the PT-fan
+  M109 S{target_extruder}                           # Heats the nozzle to your print temp
 
   # Get ready to print
   G1 X25 Y5 Z10 F15000          # Go to X25 and Y5
   G92 E0.0                      # Set position 
 ```
-## Credits
+### Interested in more macros?
 
-Credits to the Voron supportteam for making this!
+Interested in learning more about macros?
+
+- [Ellis Useful Macros](https://github.com/AndrewEllis93/Print-Tuning-Guide/blob/main/articles/useful_macros.md)
+- [Voron Klipper Macros](https://github.com/The-Conglomerate/Voron-Klipper-Common/)
+- [Samwiseg0 config](https://github.com/samwiseg0/V2.2265_klipper_config)
+
+### Credits
+
+Credits to the Voron supportteam for making this
 
 
 ### Feedback
