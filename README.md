@@ -177,12 +177,14 @@ gcode:
   M107                                                          # Turn off partcooling fan
   M109 S{target_extruder}                                       # Heat the nozzle to your print temp
 
-  # Gets ready to print by going to the front of the printer and updating Stealthburner LEDs
+  # Gets ready to print by doing a purge line and updating the SB-leds
   SET_DISPLAY_TEXT MSG="Printer goes brr"          # Display info on the display
-  STATUS_READY                                     # Set SB-leds to ready-mode
-  G1 X25 Y5 Z10 F15000                             # Go to X25 and Y5
   STATUS_PRINTING                                  # Set SB-leds to printing-mode
-  G92 E0.0                                         # Set position 
+  G0 X{x_wait - 50} Y4 F10000                      # Moves to starting point
+  G0 Z0.4                                          # Raise Z to 0.4
+  G91                                              # Incremental positioning 
+  G1 X100 E20 F1000                                # Purge line
+  G90                                              # Absolut position
 ```
 
 # The print_start macro for v0
@@ -232,9 +234,9 @@ gcode:
   M107                                              # Turns off the PT-fan
   M109 S{target_extruder}                           # Heats the nozzle to your print temp
 
-  # Get ready to print
-  G1 X25 Y5 Z10 F15000          # Go to X25 and Y5
-  G92 E0.0                      # Set position 
+  # Create a purge line and starts the print
+  G1 X5 Y4 Z0.4 F10000                             # Moves to starting point
+  G1 X115 E20 F1000                                # Purge line
 ```
 ### Interested in more macros?
 
