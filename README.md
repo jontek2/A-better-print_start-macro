@@ -2,9 +2,9 @@
 
 **:warning: This is still in BETA :warning:**
 
-This documents aims to help you get a better, simple and powerful print_start macro for your Voron printer. With this macro you will be able to pass variables such as print temps and chamber temps to your print_start macro. By doing so you will be able to automatically start a heatsoak and customize your printers behaviour. The heatsoak will start when you've sliced a print with a bed temp higher than 90c. It will then heatsoak to your set chamber temp. If no chamber temp is set it will fallback to the macros standard chambertemp of 40c. 
+This document aims to help you get a better, simpler and more powerful print_start macro for your Voron printer. With this macro you will be able to pass variables such as print temps and chamber temps to your print_start macro. By doing so you will be able to automatically start a heatsoak and customize your printer's behaviour. The heatsoak will start when you've sliced a print with a bed temp higher than 90c. It will then heatsoak to your set chamber temp. If no chamber temp is set it will fall back to the macro's standard chamber temp of 40c. 
 
-Each command has a comment next to it explaining what it does. Make sure to read through the macro and get an understanding of what it.
+Each command has a comment next to it explaining what it does. Make sure to read through the macro and get an understanding of what it does.
 
 In short this macro will perform:
 
@@ -130,7 +130,7 @@ gcode:
 
   # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak.
   {% if params.BED|int > 90 %}
-    SET_DISPLAY_TEXT MSG="Heating bed: {target_bed}"    # Displays info
+    SET_DISPLAY_TEXT MSG="Bed: {target_bed}c"            # Displays info
     STATUS_HEATING                                      # Sets SB-leds to heating-mode
     M106 S255                                           # Turns on the PT-fan
 
@@ -139,12 +139,12 @@ gcode:
 
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Goes to center of the bed
     M190 S{target_bed}                                  # Sets the target temp for the bed
-    SET_DISPLAY_TEXT MSG="Heatsoaking to: {target_chamber}c"                        # Displays info
+    SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber}c"  # Displays info
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for chamber to reach desired temp
 
   # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak
   {% else %}
-    SET_DISPLAY_TEXT MSG="Heating bed: {target_bed}c"   # Displays info
+    SET_DISPLAY_TEXT MSG="Bed: {target_bed}c"           # Displays info
     STATUS_HEATING                                      # Sets SB-leds to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Goes to center of the bed
     M190 S{target_bed}                                  # Sets the target temp for the bed
@@ -153,8 +153,8 @@ gcode:
   {% endif %}
 
   # Heating nozzle to 150 degrees. This helps with getting a correct Z-home
-  SET_DISPLAY_TEXT MSG="Heating hotend: 150c"          # Displays info
-  M109 S150                                            # Heats the nozzle to 150c
+  SET_DISPLAY_TEXT MSG="Hotend: 150c"          # Displays info
+  M109 S150                                    # Heats the nozzle to 150c
 
   ##  Uncomment for Trident (screw_tilt_adjust)
   #SET_DISPLAY_TEXT MSG="Z-tilt adjust"     # Displays info
@@ -170,7 +170,7 @@ gcode:
 
   ##  Uncomment for Klicky auto-z
   #CALIBRATE_Z                                 # Calibrates Z-offset with klicky
-  #SET_DISPLAY_TEXT MSG="Calibrate Z-offset"   # Displays info
+  #SET_DISPLAY_TEXT MSG="Z-offset"             # Displays info
 
   ##  Uncomment for bed mesh (2 of 2)
   #SET_DISPLAY_TEXT MSG="Bed mesh"    # Displays info
@@ -178,7 +178,7 @@ gcode:
   #bed_mesh_calibrate                 # Starts bed mesh
 
   # Heats up the nozzle up to target via data from slicer
-  SET_DISPLAY_TEXT MSG="Heating hotend: {target_extruder}c"     # Displays info
+  SET_DISPLAY_TEXT MSG="Hotend: {target_extruder}c"             # Displays info
   STATUS_HEATING                                                # Sets SB-leds to heating-mode
   G1 X{x_wait} Y{y_wait} Z15 F9000                              # Goes to center of the bed
   M107                                                          # Turns off partcooling fan
