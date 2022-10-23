@@ -13,6 +13,7 @@ In short this macro will perform:
 3) QGL/Z-tilt adjust
 4) Bed mesh (if activated)
 5) Make a short purge/prime line
+6) Start the print
 
 ## Requirements
 
@@ -96,9 +97,12 @@ value: 0
 shutdown_value: 0
 ```
 
+With this macro you have the option to turn the nevermore ON. This means that if you uncomment the logic for the nevermore it will be ON until you turn it off. It's recommended to add logic to your print_end macro and turning the nevermore OFF. This can be done by adding ```SET_PIN PIN=nevermore VALUE=0``` to your print_end macro.
+
+
 # The print_start macro for V2/Trident
 
-As mentioned above you will need to uncomment parts of this macro for it to work on your V2 or Trident. Replace this macro with your current print_start macro in your printer.cfg
+As mentioned above you will need to uncomment parts of this macro for it to work on your V2 or Trident. Replace this macro with your current print_start macro in your printer.cfg.
 
 ```
 #####################################################################
@@ -130,7 +134,7 @@ gcode:
 
   # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak.
   {% if params.BED|int > 90 %}
-    SET_DISPLAY_TEXT MSG="Bed: {target_bed}c"            # Displays info
+    SET_DISPLAY_TEXT MSG="Bed: {target_bed}"            # Displays info
     STATUS_HEATING                                      # Sets SB-leds to heating-mode
     M106 S255                                           # Turns on the PT-fan
 
