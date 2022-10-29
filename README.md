@@ -134,7 +134,7 @@ gcode:
 
   # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak.
   {% if params.BED|int > 90 %}
-    SET_DISPLAY_TEXT MSG="Bed: {target_bed}"            # Displays info
+    SET_DISPLAY_TEXT MSG="Bed: {target_bed}c"           # Displays info
     STATUS_HEATING                                      # Sets SB-leds to heating-mode
     M106 S255                                           # Turns on the PT-fan
 
