@@ -179,8 +179,13 @@ gcode:
   ##  Uncomment for bed mesh (2 of 2)
   #SET_DISPLAY_TEXT MSG="Bed mesh"    # Displays info
   #STATUS_MESHING                     # Sets SB-leds to bed mesh-mode
-  #bed_mesh_calibrate                 # Starts bed mesh
 
+  ## Full calibrate is not needed every print
+  ## Load an existing mesh based on target bed temp
+  ## Name should be in the format of bed-{temp}
+  #BED_MESH_PROFILE LOAD=bed-{target_bed}   # Load an existing mesh
+  #bed_mesh_calibrate                       # Starts bed mesh if no existing ones
+  
   # Heats up the nozzle up to target via data from slicer
   SET_DISPLAY_TEXT MSG="Hotend: {target_extruder}c"             # Displays info
   STATUS_HEATING                                                # Sets SB-leds to heating-mode
