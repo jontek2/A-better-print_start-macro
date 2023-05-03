@@ -1,7 +1,5 @@
 # A better print_start macro
 
-**:warning: This is still in BETA :warning:**
-
 This document aims to help you get a better, simpler and more powerful print_start macro for your Voron printer. With this macro you will be able to pass variables such as print temps and chamber temps to your print_start macro. By doing so you will be able to automatically start a heatsoak and customize your printer's behaviour. The heatsoak will start when you've sliced a print with a bed temp higher than 90c. It will then heatsoak to your set chamber temp. If no chamber temp is set it will fall back to the macro's standard chamber temp of 40c. 
 
 Each command has a comment next to it explaining what it does. Make sure to read through the macro and get an understanding of what it does.
@@ -22,7 +20,7 @@ In short this macro will perform:
  Just like you did in printer.cfg you will need to go through and uncomment parts of the macro in order to make it work with your printer:
 
  - Bed mesh (2 lines at 2 locations)
- - Screw_tilt_adjust if your printer is a Trident
+ - Z_TILT_ADJUST if your printer is a Trident
  - Quad gantry level if your printer is a V2
  - [Nevermore](https://github.com/nevermore3d/Nevermore_Micro) - if you have one
 
@@ -111,7 +109,7 @@ As mentioned above you will need to uncomment parts of this macro for it to work
 
 ## *** THINGS TO UNCOMMENT: ***
 ## Bed mesh (2 lines at 2 locations)
-## Screw_tilt_adjust if your printer is a Trident
+## Z_TILT_ADJUST if your printer is a Trident
 ## Quad gantry level if your printer is a V2
 ## Nevermore - if you have one
 
@@ -160,7 +158,7 @@ gcode:
   SET_DISPLAY_TEXT MSG="Hotend: 150c"          # Displays info
   M109 S150                                    # Heats the nozzle to 150c
 
-  ##  Uncomment for Trident (screw_tilt_adjust)
+  ##  Uncomment for Trident (Z_TILT_ADJUST)
   #SET_DISPLAY_TEXT MSG="Z-tilt adjust"     # Displays info
   #STATUS_LEVELING                          # Sets SB-leds to leveling-mode
   #Z_TILT_ADJUST                            # Levels the buildplate via z_tilt_adjust
