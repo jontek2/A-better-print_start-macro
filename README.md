@@ -246,6 +246,10 @@ gcode:
 
   # If the bed temp is not over 90c then it skips the heatsoak and just heats up to set temp with a 5min soak.
   {% else %}
+  
+  ##  Uncomment if you have a Nevermore. This turns the nevermore off for lower temp prints like PLA.
+    #SET_PIN PIN=nevermore VALUE=0                   # Turns off the nevermore
+    
     G1 X{x_wait} Y{y_wait} Z15 F9000                # Goes to center of the bed
     M190 S{target_bed}                              # Sets target temp for the bed
     G4 P300000                                      # Waits 5 min for the bedtemp to stabilize
