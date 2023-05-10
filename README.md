@@ -154,6 +154,10 @@ gcode:
 
   # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak
   {% else %}
+  
+  ##  Uncomment if you have a Nevermore. This turns the nevermore off for lower temp prints like PLA.
+    #SET_PIN PIN=nevermore VALUE=0                       # Turns off the nevermore
+	
     SET_DISPLAY_TEXT MSG="Bed: {target_bed}c"           # Displays info
     STATUS_HEATING                                      # Sets SB-leds to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Goes to center of the bed
