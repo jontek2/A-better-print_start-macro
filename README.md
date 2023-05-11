@@ -267,7 +267,7 @@ gcode:
 
 Interested in learning more about macros?
 
-- [Ellis Useful Macros](https://github.com/AndrewEllis93/Print-Tuning-Guide/blob/main/articles/useful_macros.md)
+- [Ellis Useful Macros](https://ellis3dp.com/Print-Tuning-Guide/articles/index_useful_macros.html)
 - [Voron Klipper Macros](https://github.com/The-Conglomerate/Voron-Klipper-Common/)
 - [Samwiseg0 config](https://github.com/samwiseg0/V2.2265_klipper_config)
 
