@@ -60,7 +60,7 @@ print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 
 ### PrusaSlicer
 
-:warning: PrusaSlicer doesn't give you the option to set a specific chambertemp. Therefor you it will fallback to the standard chambertemp of 40c. 
+:warning: PrusaSlicer doesn't give you the option to set a specific chambertemp. Therefore it will fallback to the standard chambertemp of 40c. 
 
 In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
