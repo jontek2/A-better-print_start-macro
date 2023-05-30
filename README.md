@@ -70,6 +70,16 @@ In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings"
 print_start EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature}
 ```
 
+### OrcaSlicer
+In OrcaSlicer go to "Printer settings" -> "Machine start g-code" and update it to:
+
+```
+M104 S0 ; Stops OrcaSlicer from sending temp waits separately
+M140 S0
+print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
+```
+
+
 ## :warning: Required verification/changes in your printer.cfg :warning:
 
 The print_start macro has predefined names for nevermore and chamber thermistor. Therefor you need to make sure that your's are named correctly.
@@ -251,13 +261,15 @@ gcode:
 
 Interested in learning more about macros?
 
-- [Ellis Useful Macros](https://github.com/AndrewEllis93/Print-Tuning-Guide/blob/main/articles/useful_macros.md)
+- [Ellis Useful Macros](https://ellis3dp.com/Print-Tuning-Guide/articles/index_useful_macros.html)
 - [Voron Klipper Macros](https://github.com/The-Conglomerate/Voron-Klipper-Common/)
-- [Samwiseg0 config](https://github.com/samwiseg0/V2.2265_klipper_config)
+- [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging)
+- [Klippain](https://github.com/Frix-x/klippain)
+
 
 ### Credits
 
-Credits to the Voron supportteam for making this
+Credits to the Voron help and contributers for making this!
 
 
 ### Feedback
