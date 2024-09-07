@@ -15,7 +15,7 @@
 You need to update your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
 
 <details>
-## <summary>SuperSlicer</summary>
+<summary>SuperSlicer</summary>
 In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
 ```
@@ -25,7 +25,7 @@ print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 ```
 </details>
 <details>
-## <summary>OrcaSlicer</summary>
+<summary>OrcaSlicer</summary>
 In OrcaSlicer go to "Printer settings" -> "Machine start g-code" and update it to:
 
 ```
@@ -35,7 +35,7 @@ print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 ```
 </details>
 <details>
-## <summary>PrusaSlicer</summary>
+<summary>PrusaSlicer</summary>
 
 In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
@@ -46,7 +46,7 @@ print_start EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_laye
 ```
 </details>
 <details>
-## <summary>Cura</summary>
+<summary>Cura</summary>
 
 In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and update it to:
 
@@ -247,7 +247,7 @@ gcode:
 
 ## Changelog
 
-2024-09-XX: Big update! Removed wall of text, added support for Beacon Contact, PrusaSlicer chamber temperatur, typos and more!<br>
+2024-09-07: Big update! Removed wall of text, added support for Beacon Contact, PrusaSlicer chamber temperatur, typos and more!<br>
 2024-05-30: Added support for Orcaslicer.<br>
 2022-09-??: Release!
 
