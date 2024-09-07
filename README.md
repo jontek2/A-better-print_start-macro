@@ -170,7 +170,7 @@ gcode:
   #STATUS_MESHING                                       # Set LEDs to bed mesh-mode
   #BED_MESH_CALIBRATE                                   # Start the bed mesh (add ADAPTIVE=1) for adaptive bed mesh
 
-  ## Uncomment for Beacon Contact (4 of 4 for beacon contact)
+  ## Uncomment for Beacon Contact (3 of 4 for beacon contact)
   #G28 Z METHOD=CONTACT CALIBRATE=0                     # Calibrate z offset only with hot nozzle
 
   # Heat up the hotend up to target via data from slicer
@@ -247,7 +247,7 @@ gcode:
 
 ## Changelog
 
-2024-09-07: Big update! Removed wall of text, added support for Beacon Contact, PrusaSlicer chamber temperatur, typos and more!<br>
+2024-09-07: Big update! Removed wall of text, added support for Beacon Contact, PrusaSlicer chamber temperature, fixed typos and more!<br>
 2024-05-30: Added support for Orcaslicer.<br>
 2022-09-??: Release!
 
