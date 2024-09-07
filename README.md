@@ -9,7 +9,7 @@
 <h4>This print_start macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your Voron printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
 
 
-<p>This macro requires you to have a chamber thermistor. This is necessary to achive your set chamber temp in your slicer.</p>
+<p>This macro requires you to have a chamber thermistor. This is necessary to achieve your set chamber temp in your slicer.</p>
 
 ## :warning: Required changes in your slicer :warning:
 You need to update your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
@@ -117,7 +117,7 @@ gcode:
   # Home the printer, set absolute positioning and update the Stealthburner LEDs.
   STATUS_HOMING                                         # Set LEDs to homing-mode
   G28                                                   # Full home (XYZ)
-  G90                                                   # Absolut position
+  G90                                                   # Absolute position
 
   ##  Uncomment for bed mesh (1 of 2 for bed mesh)
   #BED_MESH_CLEAR                                       # Clear old saved bed mesh (if any)
@@ -190,7 +190,7 @@ gcode:
   G0 Z0.4                                               # Raise Z to 0.4
   G91                                                   # Incremental positioning 
   G1 X100 E20 F1000                                     # Primeline
-  G90                                                   # Absolut position
+  G90                                                   # Absolute position
 ```
 
 # v0 macro
@@ -216,7 +216,7 @@ gcode:
 
   # Homes the printer and sets absolute positioning
   G28                                                 # Full home (XYZ)
-  G90                                                 # Absolut position
+  G90                                                 # Absolute position
 
   # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak
   {% if params.BED|int > 90 %}
