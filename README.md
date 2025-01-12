@@ -17,7 +17,7 @@ Last, there are STATUS_ macros built into the start print sequence. These have a
 </b>
 
 
-<h4>This print_start macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your Voron printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
+<h4>This print_start macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your SV08 printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
 
 
 <p>This macro requires you to have a chamber thermistor. This is necessary to achieve your set chamber temp in your slicer.</p>
