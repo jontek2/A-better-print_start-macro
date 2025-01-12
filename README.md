@@ -2,9 +2,20 @@
   <br>
   <img src="img/start.png" width="75""></a>
   <br>
-    A better print_start macro
+    A better print_start macro (SV08 Edition)
   <br>
 </h1>
+
+<b>
+NOTES: 
+<br>
+KAMP IS ALSO APPLIED IN THIS MACRO - THIS IS TO GET RID OF THE LARGE, OBSCURE, PRUGE LINE THAT SOVOL CREATED
+<br>
+Other methods can be used too. See: https://www.printables.com/model/1035759-adaptive-purge-for-any-3d-printer-using-slicer-var
+<br>
+Last, there are STATUS_ macros built into the start print sequence. These have all been commented out to prevent unknown errors. If you have LEDs setup in your SV08, see: https://github.com/julianschill/klipper-led_effect
+</b>
+
 
 <h4>This print_start macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your Voron printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
 
@@ -69,6 +80,8 @@ sensor_type:  XXX
 sensor_pin:   XXX
 ```
 
+See how to add a chamber thermistor to the SV08: https://github.com/ss1gohan13/Sovol-SV08-Mainline/blob/main/Extras/Chamber%20Thermistor/BMP280_Readme.md
+
 **Nevermore**:
 Make sure nevermore is named "nevermore" and update XXX.
 
@@ -81,176 +94,126 @@ shutdown_value: 0
 
 Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your print_end macro to turn the nevermore off.
 
+<b> By default, I have commented out the nevermore to prevent unknown issues. If you setup a nevermore, or similar, please make sure to uncomment it in the start print sequence </b>
 
-
-# V2.4/Trident macro
+# SV08
 
 > [!WARNING]  
-> The macro was updated recently (2024-09-07). If you run in to any issues then please let me know by opening a issue on github.
+> The macro was updated recently (2025-01-11). If you run in to any issues then please let me know by opening a issue on github.
 
-Copy this macro and replace your old print_start macro in your printer.cfg. Then read through and uncomment parts of this macro.
+Copy this macro and replace your old start_print/print_start macro in your printer.cfg. Then read through and uncomment parts of this macro.
 
 ```
 #####################################################################
-#   A better print_start macro for v2/trident
+#   A better print_start macro for SV08
 #####################################################################
 
-## *** THINGS TO UNCOMMENT: ***
-## Bed mesh (2 lines at 2 locations)
-## Nevermore (if you have one)
-## Z_TILT_ADJUST (For Trident only)
-## QUAD_GANTRY_LEVEL (For V2.4 only)
-## Beacon Contact logic (if you have one. 4 lines at 4 locations)
-
-[gcode_macro PRINT_START]
+[gcode_macro START_PRINT]
 gcode:
-  # This part fetches data from your slicer. Such as bed, extruder, and chamber temps and size of your printer.
+  # This part fetches data from your slicer. Such as bed temp, extruder temp, chamber temp and size of your printer.
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
-  {% set target_chamber = params.CHAMBER|default("45")|int %}
+  {% set target_chamber = params.CHAMBER|default("40")|int %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
+  SET_FILAMENT_SENSOR SENSOR=filament_sensor ENABLE=1
+  # Homes the printer, sets absolute positioning and updates the Stealthburner leds.
+  #  STATUS_HOMING         # Sets SB-leds to homing-mode
+    
+    {% if printer.toolhead.homed_axes != "xyz" %}
+        G28                      # Full home (XYZ)
+        {% else %}
+          G28 Z
+    {% endif %}
+                
+    G90
 
-  ##  Uncomment for Beacon Contact (1 of 4 for beacon contact)
-  #SET_GCODE_OFFSET Z=0                                 # Set offset to 0
+    SMART_PARK
 
-  # Home the printer, set absolute positioning and update the Stealthburner LEDs.
-  STATUS_HOMING                                         # Set LEDs to homing-mode
-  G28                                                   # Full home (XYZ)
-  G90                                                   # Absolute position
+    M400
 
-  ##  Uncomment for bed mesh (1 of 2 for bed mesh)
-  #BED_MESH_CLEAR                                       # Clear old saved bed mesh (if any)
+    CLEAR_PAUSE
 
-  # Check if the bed temp is higher than 90c - if so then trigger a heatsoak.
+  ##  Uncomment for bed mesh (1 of 2)
+  BED_MESH_CLEAR       # Clears old saved bed mesh (if any)
+
+  # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak.
   {% if params.BED|int > 90 %}
-    SET_DISPLAY_TEXT MSG="Bed: {target_bed}c"           # Display info on display
-    STATUS_HEATING                                      # Set LEDs to heating-mode
-    M106 S255                                           # Turn on the PT-fan
-
+    SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
+  #  STATUS_HEATING                                      # Sets SB-leds to heating-mode
+    M106 S255                                           # Turns on the PT-fan
     ##  Uncomment if you have a Nevermore.
-    #SET_PIN PIN=nevermore VALUE=1                      # Turn on the nevermore
-
+  #  SET_PIN PIN=nevermore VALUE=1                      # Turns on the nevermore
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
-    M190 S{target_bed}                                  # Set the target temp for the bed
-    SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber}c"  # Display info on display
-    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for chamber temp
+    M190 S{target_bed}                                  # Sets the target temp for the bed
+    SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber}C"  # Displays info
+    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for chamber to reach desired temp
 
-  # If the bed temp is not over 90c, then skip the heatsoak and just heat up to set temp with a 5 min soak
+  # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak
   {% else %}
-    SET_DISPLAY_TEXT MSG="Bed: {target_bed}c"           # Display info on display
-    STATUS_HEATING                                      # Set LEDs to heating-mode
+    SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
+  #  STATUS_HEATING                                      # Sets SB-leds to heating-mode
+    M190 S{target_bed}                                  # Sets the target temp for the bed
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
-    M190 S{target_bed}                                  # Set the target temp for the bed
-    SET_DISPLAY_TEXT MSG="Soak for 5 min"               # Display info on display
-    G4 P300000                                          # Wait 5 min for the bedtemp to stabilize
+    SET_DISPLAY_TEXT MSG="Soak for 5min"                # Displays info
+    G4 P300000                                          # Waits 5 min for the bedtemp to stabilize
   {% endif %}
 
-  # Heat hotend to 150c. This helps with getting a correct Z-home.
-  SET_DISPLAY_TEXT MSG="Hotend: 150c"                   # Display info on display
-  M109 S150                                             # Heat hotend to 150c
+  ##  Uncomment for V2 (Quad gantry level AKA QGL)
+  SET_DISPLAY_TEXT MSG="QGL"      # Displays info
+#  STATUS_LEVELING                 # Sets SB-leds to leveling-mode
+    {% if printer.quad_gantry_level.applied == False %}
+        {% if "xyz" not in printer.toolhead.homed_axes %}
+            G28 ; home if not already homed
+        {% endif %}
+        QUAD_GANTRY_LEVEL
+    #    STATUS_HOMING       # Homes Z again after QGL
+        G28 Z
+    {% endif %}
 
-  ##  Uncomment for Beacon contact (2 of 4 for beacon contact)
-  #G28 Z METHOD=CONTACT CALIBRATE=1                     # Calibrate z offset and beacon model
+  SMART_PARK
 
-  ##  Uncomment for Trident (Z_TILT_ADJUST)
-  #SET_DISPLAY_TEXT MSG="Leveling"                      # Display info on display
-  #STATUS_LEVELING                                      # Set LEDs to leveling-mode
-  #Z_TILT_ADJUST                                        # Level the printer via Z_TILT_ADJUST
-  #G28 Z                                                # Home Z again after Z_TILT_ADJUST
+  # Heating nozzle to 150 degrees. This helps with getting a correct Z-home
+  SET_DISPLAY_TEXT MSG="Hotend: 200C"          # Displays info
+  M109 S200                                    # Heats the nozzle to 200C
 
-  ##  Uncomment for V2.4 (Quad gantry level AKA QGL)
-  #SET_DISPLAY_TEXT MSG="Leveling"                      # Display info on display
-  #STATUS_LEVELING                                      # Set LEDs to leveling-mode
-  #QUAD_GANTRY_LEVEL                                    # Level the printer via QGL
-  #G28 Z                                                # Home Z again after QGL
+ # STATUS_CLEANING
 
-  ##  Uncomment for bed mesh (2 of 2 for bed mesh)
-  #SET_DISPLAY_TEXT MSG="Bed mesh"                      # Display info on display
-  #STATUS_MESHING                                       # Set LEDs to bed mesh-mode
-  #BED_MESH_CALIBRATE                                   # Start the bed mesh (add ADAPTIVE=1) for adaptive bed mesh
+  CLEAN_NOZZLE
 
-  ## Uncomment for Beacon Contact (3 of 4 for beacon contact)
-  #G28 Z METHOD=CONTACT CALIBRATE=0                     # Calibrate z offset only with hot nozzle
+  ##  Uncomment for bed mesh (2 of 2)
+  SET_DISPLAY_TEXT MSG="Bed mesh"    # Displays info
+  
+#  STATUS_MESHING                     # Sets SB-leds to bed mesh-mode
 
-  # Heat up the hotend up to target via data from slicer
-  SET_DISPLAY_TEXT MSG="Hotend: {target_extruder}c"     # Display info on display
-  STATUS_HEATING                                        # Set LEDs to heating-mode
-  G1 X{x_wait} Y{y_wait} Z15 F9000                      # Go to center of the bed
-  M107                                                  # Turn off partcooling fan
-  M109 S{target_extruder}                               # Heat the hotend to set temp
+  #BED_MESH_CALIBRATE METHOD=RAPID_SCAN ADAPTIVE=1              # Starts bed mesh for eddy
+  BED_MESH_CALIBRATE ADAPTIVE=1                  # Starts bed mesh
 
-  ##   Uncomment for Beacon Contact (4 of 4 for beacon contact)
-  #SET_GCODE_OFFSET Z=0.06                              # Add a little offset for hotend thermal expansion
+  M400
 
-  # Get ready to print by doing a primeline and updating the LEDs
-  SET_DISPLAY_TEXT MSG="Printer goes brr"               # Display info on display
-  STATUS_PRINTING                                       # Set LEDs to printing-mode
-  G0 X{x_wait - 50} Y4 F10000                           # Go to starting point
-  G0 Z0.4                                               # Raise Z to 0.4
-  G91                                                   # Incremental positioning 
-  G1 X100 E20 F1000                                     # Primeline
-  G90                                                   # Absolute position
-```
+#  STATUS_READY
 
-# v0 macro
+  SMART_PARK
 
-Copy this macro and replace the old print_start macro in your printer.cfg. Then read through and uncomment parts of this macro.
+  # Heats up the nozzle up to target via data from slicer
+  SET_DISPLAY_TEXT MSG="Hotend: {target_extruder}C"             # Displays info
+#  STATUS_HEATING                                                # Sets SB-leds to heating-mode
+  M107                                                          # Turns off partcooling fan
+  M109 S{target_extruder}                                       # Heats the nozzle to printing temp
+  
+  # Gets ready to print by doing a purge line and updating the SB-leds
+  SET_DISPLAY_TEXT MSG="The purge..."          # Displays info
+#  STATUS_CLEANING
 
-```
-#####################################################################
-#   A better print_start macro for v0
-#####################################################################
-
-## *** THINGS TO UNCOMMENT: ***
-## Nevermore (if you have one)
-
-[gcode_macro PRINT_START]
-gcode:
-  # Fetches data from your slicer. Such as bed temp, extruder temp, chamber temp and size of your printer.
-  {% set target_bed = params.BED|int %}
-  {% set target_extruder = params.EXTRUDER|int %}
-  {% set target_chamber = params.CHAMBER|default("45")|int %}
-  {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
-  {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
-
-  # Homes the printer and sets absolute positioning
-  G28                                                 # Full home (XYZ)
-  G90                                                 # Absolute position
-
-  # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak
-  {% if params.BED|int > 90 %}
-    M106 S255                                         # Turn on the PT-fan
-
-    ##  Uncomment if you have a Nevermore.
-    #SET_PIN PIN=nevermore VALUE=1                    # Turn on the nevermore
-
-    G1 X{x_wait} Y{y_wait} Z15 F9000                  # Go to center of the bed
-    M190 S{target_bed}                                # Set target temp for the bed
-    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber temp
-
-  # If the bed temp is not over 90c it skips the heatsoak and just heats up to set temp with a 1 min soak.
-  {% else %}
-    G1 X{x_wait} Y{y_wait} Z15 F9000                  # Go to center of the bed
-    M190 S{target_bed}                                # Set target temp for the bed
-    G4 P300000                                        # Wait 5 min for the bedtemp to stabilize
-  {% endif %}
-
-  # Heats up the hotend up to target via slicer
-  M107                                                # Turn off partcooling fan
-  M109 S{target_extruder}                             # Heat hotend to print temp
-
-  # Create a prime line and starts the print
-  G1 X5 Y4 Z0.4 F10000                                # Go to starting point
-  G1 X115 E20 F1000                                   # Primeline
+  SET_DISPLAY_TEXT MSG="Printer goes brrr"          # Displays info
+  
+  LINE_PURGE
+#  STATUS_PRINTING
 ```
 
 ## Changelog
 
-2024-09-07: Big update! Removed wall of text, added support for Beacon Contact, PrusaSlicer chamber temperature, fixed typos and more!<br>
-2024-05-30: Added support for Orcaslicer.<br>
-2022-09-??: Release!
-
+2025-01-11: Initial creation 
 
 ## Interested in more macros?
 
