@@ -21,12 +21,12 @@ Last, there are STATUS_ macros built into the start print sequence. These have a
 ## :warning: Required changes in your slicer :warning:
 You need to update your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
 
-<b>NOTE:</b> The CHAMBER call can be omitted out for the SV08, unless you have installed a CHAMBER thermistor. If you have a thermistor, by default, if the bed is 90C or above the chamber thermistor will be called and wait until the slicer defined chamber temp.
+<b>NOTE:</b> The CHAMBER call can be omitted out for the SV08. If you have a thermistor, by default, when the bed is 90C or above the chamber thermistor will be called and wait until the slicer defined chamber temp. If you do not wish to use chamber thermistor, see the "No chamber thermistor" variants.
 
 e.g. dont add `CHAMBER=[chamber_temperature]` to your slicer if you don't have a chamber thermistor.
 
 <details>
-<summary>SuperSlicer</summary>
+<summary>SuperSlicer w/ chamber thermistor</summary>
 In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
 ```
@@ -36,7 +36,17 @@ start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 ```
 </details>
 <details>
-<summary>OrcaSlicer</summary>
+<summary>SuperSlicer w/o chamber thermistor</summary>
+In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
+
+```
+M104 S0 ; Stops SuperSlicer from sending temp waits separately
+M140 S0
+start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
+```
+</details>
+<details>
+<summary>OrcaSlicer w/ chamber thermistor</summary>
 In OrcaSlicer go to "Printer settings" -> "Machine start g-code" and update it to:
 
 ```
@@ -46,7 +56,17 @@ start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 ```
 </details>
 <details>
-<summary>PrusaSlicer</summary>
+<summary>OrcaSlicer w/o chamber thermistor</summary>
+In OrcaSlicer go to "Printer settings" -> "Machine start g-code" and update it to:
+
+```
+M104 S0 ; Stops OrcaSlicer from sending temp waits separately
+M140 S0
+start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
+```
+</details>
+<details>
+<summary>PrusaSlicer w/ chamber thermistor</summary>
 
 In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
@@ -57,7 +77,27 @@ start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_laye
 ```
 </details>
 <details>
-<summary>Cura</summary>
+<summary>PrusaSlicer w/o chamber thermistor</summary>
+
+In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
+
+```
+M104 S0 ; Stops PrusaSlicer from sending temp waits separately
+M140 S0
+start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
+```
+</details>
+<details>
+<summary>Cura w/ chamber thermistor</summary>
+
+In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and update it to:
+
+```
+start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature}
+```
+</details>
+<details>
+<summary>Cura w/o chamber thermistor</summary>
 
 In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and update it to:
 
@@ -96,13 +136,16 @@ Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your print_end macro to t
 
 <b> By default, I have commented out the nevermore to prevent unknown issues. If you setup a nevermore, or similar, please make sure to uncomment it in the start print sequence </b>
 
-# SV08
+# SV08 START_PRINT
 
 > [!WARNING]  
-> The macro was updated recently (2025-01-11). If you run in to any issues then please let me know by opening a issue on github.
+> The macro was updated recently (2025-01-15). If you run in to any issues then please let me know by opening a issue on github.
 
-Copy this macro and replace your old start_print/start_print macro in your printer.cfg. Then read through and uncomment parts of this macro.
+Copy either macro and replace your old start_print/start_print macro in your printer.cfg. Then read through and uncomment parts of this macro.
 
+<details>
+<summary>With a Chamber thermistor</summary>
+  
 ```
 #####################################################################
 #   A better start_print macro for SV08
@@ -210,6 +253,119 @@ gcode:
   LINE_PURGE
 #  STATUS_PRINTING
 ```
+</details>
+
+<details>
+<summary>Without a Chamber thermistor</summary>
+  
+```
+#####################################################################
+#   A better start_print macro for SV08
+#####################################################################
+
+[gcode_macro START_PRINT]
+gcode:
+  # This part fetches data from your slicer. Such as bed temp, extruder temp, chamber temp and size of your printer.
+  {% set target_bed = params.BED|int %}
+  {% set target_extruder = params.EXTRUDER|int %}
+  {% set target_chamber = params.CHAMBER|default("40")|int %} #Can be commented out if needed
+  {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
+  {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
+  SET_FILAMENT_SENSOR SENSOR=filament_sensor ENABLE=1
+  # Homes the printer, sets absolute positioning and updates the Stealthburner leds.
+  #  STATUS_HOMING         # Sets SB-leds to homing-mode
+    
+    {% if printer.toolhead.homed_axes != "xyz" %}
+        G28                      # Full home (XYZ)
+        {% else %}
+          G28 Z
+    {% endif %}
+                
+    G90
+
+    SMART_PARK
+
+    M400
+
+    CLEAR_PAUSE
+
+  ##  Uncomment for bed mesh (1 of 2)
+  BED_MESH_CLEAR       # Clears old saved bed mesh (if any)
+
+  # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak.
+  #{% if params.BED|int > 90 %}
+  #  SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
+  #  STATUS_HEATING                                      # Sets SB-leds to heating-mode
+  #  M106 S255                                           # Turns on the PT-fan
+  #  ##  Uncomment if you have a Nevermore.
+  #  SET_PIN PIN=nevermore VALUE=1                      # Turns on the nevermore
+  #  G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
+  #  M190 S{target_bed}                                  # Sets the target temp for the bed
+  #  SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber}C"  # Displays info
+  #  TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for chamber to reach desired temp
+
+  # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak
+  {% else %}
+    SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
+  #  STATUS_HEATING                                      # Sets SB-leds to heating-mode
+    M190 S{target_bed}                                  # Sets the target temp for the bed
+    G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
+    SET_DISPLAY_TEXT MSG="Soak for 5min"                # Displays info
+    G4 P300000                                          # Waits 5 min for the bedtemp to stabilize
+  {% endif %}
+
+  ##  Uncomment for V2 (Quad gantry level AKA QGL)
+  SET_DISPLAY_TEXT MSG="QGL"      # Displays info
+#  STATUS_LEVELING                 # Sets SB-leds to leveling-mode
+    {% if printer.quad_gantry_level.applied == False %}
+        {% if "xyz" not in printer.toolhead.homed_axes %}
+            G28 ; home if not already homed
+        {% endif %}
+        QUAD_GANTRY_LEVEL
+    #    STATUS_HOMING       # Homes Z again after QGL
+        G28 Z
+    {% endif %}
+
+  SMART_PARK
+
+  # Heating nozzle to 150 degrees. This helps with getting a correct Z-home
+  SET_DISPLAY_TEXT MSG="Hotend: 200C"          # Displays info
+  M109 S200                                    # Heats the nozzle to 200C
+
+ # STATUS_CLEANING
+
+  CLEAN_NOZZLE
+
+  ##  Uncomment for bed mesh (2 of 2)
+  SET_DISPLAY_TEXT MSG="Bed mesh"    # Displays info
+  
+#  STATUS_MESHING                     # Sets SB-leds to bed mesh-mode
+
+  #BED_MESH_CALIBRATE METHOD=RAPID_SCAN ADAPTIVE=1              # Starts bed mesh for eddy
+  BED_MESH_CALIBRATE ADAPTIVE=1                  # Starts bed mesh
+
+  M400
+
+#  STATUS_READY
+
+  SMART_PARK
+
+  # Heats up the nozzle up to target via data from slicer
+  SET_DISPLAY_TEXT MSG="Hotend: {target_extruder}C"             # Displays info
+#  STATUS_HEATING                                                # Sets SB-leds to heating-mode
+  M107                                                          # Turns off partcooling fan
+  M109 S{target_extruder}                                       # Heats the nozzle to printing temp
+  
+  # Gets ready to print by doing a purge line and updating the SB-leds
+  SET_DISPLAY_TEXT MSG="The purge..."          # Displays info
+#  STATUS_CLEANING
+
+  SET_DISPLAY_TEXT MSG="Printer goes brrr"          # Displays info
+  
+  LINE_PURGE
+#  STATUS_PRINTING
+```
+</details>
 
 ## Changelog
 
