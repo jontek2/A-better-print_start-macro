@@ -84,7 +84,7 @@ In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and
 ```
 M104 S0 ; Stops PrusaSlicer from sending temp waits separately
 M140 S0
-start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
+start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature]
 ```
 </details>
 <details>
@@ -102,7 +102,7 @@ start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temp
 In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and update it to:
 
 ```
-start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature}
+start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0}
 ```
 </details>
 
@@ -305,12 +305,12 @@ gcode:
 
   # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak
   #{% else %}
-SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
-#STATUS_HEATING                                      # Sets SB-leds to heating-mode
-M190 S{target_bed}                                  # Sets the target temp for the bed
-G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
-SET_DISPLAY_TEXT MSG="Soak for 5min"                # Displays info
-G4 P300000                                          # Waits 5 min for the bedtemp to stabilize
+  SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
+  #STATUS_HEATING                                      # Sets SB-leds to heating-mode
+  M190 S{target_bed}                                  # Sets the target temp for the bed
+  G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
+  SET_DISPLAY_TEXT MSG="Soak for 5min"                # Displays info
+  G4 P300000                                          # Waits 5 min for the bedtemp to stabilize
   #{% endif %}
 
   ##  Uncomment for V2 (Quad gantry level AKA QGL)
