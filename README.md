@@ -134,7 +134,7 @@ shutdown_value: 0
 
 Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your print_end macro to turn the nevermore off.
 
-<b> By default, I have commented out the nevermore to prevent unknown issues. If you setup a nevermore, or similar, please make sure to uncomment it in the start print sequence </b>
+<b> Since the SV08 doesn't come with a fan installed initially, I have commented out the nevermore to prevent unknown issues. If you setup a nevermore, or similar, please make sure to uncomment it in the start print sequence </b>
 
 # SV08 START_PRINT
 
@@ -208,9 +208,12 @@ gcode:
     {% if printer.quad_gantry_level.applied == False %}
         {% if "xyz" not in printer.toolhead.homed_axes %}
             G28 ; home if not already homed
+            {% else %}
+              G28 Z
         {% endif %}
+        STATUS_LEVELING
         QUAD_GANTRY_LEVEL
-    #    STATUS_HOMING       # Homes Z again after QGL
+        STATUS_HOMING       # Homes Z again after QGL
         G28 Z
     {% endif %}
 
@@ -305,14 +308,14 @@ gcode:
   #  TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for chamber to reach desired temp
 
   # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak
-  {% else %}
-    SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
-  #  STATUS_HEATING                                      # Sets SB-leds to heating-mode
-    M190 S{target_bed}                                  # Sets the target temp for the bed
-    G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
-    SET_DISPLAY_TEXT MSG="Soak for 5min"                # Displays info
-    G4 P300000                                          # Waits 5 min for the bedtemp to stabilize
-  {% endif %}
+  #{% else %}
+SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
+#STATUS_HEATING                                      # Sets SB-leds to heating-mode
+M190 S{target_bed}                                  # Sets the target temp for the bed
+G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
+SET_DISPLAY_TEXT MSG="Soak for 5min"                # Displays info
+G4 P300000                                          # Waits 5 min for the bedtemp to stabilize
+  #{% endif %}
 
   ##  Uncomment for V2 (Quad gantry level AKA QGL)
   SET_DISPLAY_TEXT MSG="QGL"      # Displays info
@@ -320,9 +323,12 @@ gcode:
     {% if printer.quad_gantry_level.applied == False %}
         {% if "xyz" not in printer.toolhead.homed_axes %}
             G28 ; home if not already homed
+            {% else %}
+              G28 Z
         {% endif %}
+        STATUS_LEVELING
         QUAD_GANTRY_LEVEL
-    #    STATUS_HOMING       # Homes Z again after QGL
+        STATUS_HOMING       # Homes Z again after QGL
         G28 Z
     {% endif %}
 
