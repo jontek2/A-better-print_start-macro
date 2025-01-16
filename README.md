@@ -6,21 +6,17 @@
   <br>
 </h1>
 
-<b>
-NOTES: 
-<br>
-KAMP IS ALSO APPLIED IN THIS MACRO - THIS IS TO GET RID OF THE LARGE, OBSCURE, PRUGE LINE THAT SOVOL CREATED
-<br>
-Other methods can be used too. See: https://www.printables.com/model/1035759-adaptive-purge-for-any-3d-printer-using-slicer-var
-<br>
-Last, there are STATUS_ macros built into the start print sequence. These have all been commented out to prevent unknown errors. If you have LEDs setup in your SV08, see: https://github.com/julianschill/klipper-led_effect
-</b>
+<b>NOTES:</b>
+
+KAMP IS ALSO APPLIED IN THIS MACRO - THIS IS TO GET RID OF THE LARGE, OBSCURE, PRUGE LINE THAT SOVOL CREATED:
+[Other methods can be used too](https://www.printables.com/model/1035759-adaptive-purge-for-any-3d-printer-using-slicer-var)
+
+Last, there are STATUS_ macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your SV08, look here](https://github.com/julianschill/klipper-led_effect)
+
+<h4>This start_print macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your SV08 printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
 
 
-<h4>This print_start macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your SV08 printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
-
-
-<p>This macro requires you to have a chamber thermistor. This is necessary to achieve your set chamber temp in your slicer.</p>
+<p>In the current state, this macro requires you to have a chamber thermistor. This is necessary to achieve your set chamber temp in your slicer. If you omit the chamber thermistor from the setup, it will not look/call for the chamber thermistor</p>
 
 ## :warning: Required changes in your slicer :warning:
 You need to update your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
@@ -36,7 +32,7 @@ In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and
 ```
 M104 S0 ; Stops SuperSlicer from sending temp waits separately
 M140 S0
-print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
+start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
 ```
 </details>
 <details>
@@ -46,7 +42,7 @@ In OrcaSlicer go to "Printer settings" -> "Machine start g-code" and update it t
 ```
 M104 S0 ; Stops OrcaSlicer from sending temp waits separately
 M140 S0
-print_start EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
+start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
 ```
 </details>
 <details>
@@ -57,7 +53,7 @@ In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and
 ```
 M104 S0 ; Stops PrusaSlicer from sending temp waits separately
 M140 S0
-print_start EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
+start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
 ```
 </details>
 <details>
@@ -66,14 +62,14 @@ print_start EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_laye
 In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and update it to:
 
 ```
-print_start EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature}
+start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature}
 ```
 </details>
 
 
 ## :warning: Required change in your printer.cfg :warning:
 
-The print_start macro has predefined names for nevermore and chamber thermistor. Make sure that yours are named correctly. In your printer.cfg file verify the following:
+The start_print macro has predefined names for nevermore and chamber thermistor. Make sure that yours are named correctly. In your printer.cfg file verify the following:
 
 **Chamber thermistor**:
 Make sure chamber thermistor is named "chamber" and update XXX.
@@ -105,11 +101,11 @@ Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your print_end macro to t
 > [!WARNING]  
 > The macro was updated recently (2025-01-11). If you run in to any issues then please let me know by opening a issue on github.
 
-Copy this macro and replace your old start_print/print_start macro in your printer.cfg. Then read through and uncomment parts of this macro.
+Copy this macro and replace your old start_print/start_print macro in your printer.cfg. Then read through and uncomment parts of this macro.
 
 ```
 #####################################################################
-#   A better print_start macro for SV08
+#   A better start_print macro for SV08
 #####################################################################
 
 [gcode_macro START_PRINT]
