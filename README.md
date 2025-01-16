@@ -225,7 +225,7 @@ gcode:
 
  # STATUS_CLEANING
 
-  CLEAN_NOZZLE
+  _CLEAN_NOZZLE # See: https://github.com/ss1gohan13/SV08-Replacement-Macros/blob/main/macros/macro.cfg
 
   ##  Uncomment for bed mesh (2 of 2)
   SET_DISPLAY_TEXT MSG="Bed mesh"    # Displays info
