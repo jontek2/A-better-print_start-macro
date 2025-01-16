@@ -171,8 +171,6 @@ gcode:
                 
     G90
 
-    SMART_PARK
-
     M400
 
     CLEAR_PAUSE
@@ -285,8 +283,6 @@ gcode:
     {% endif %}
                 
     G90
-
-    SMART_PARK
 
     M400
 
