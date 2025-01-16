@@ -84,7 +84,7 @@ sensor_type:  XXX
 sensor_pin:   XXX
 ```
 
-See how to add a chamber thermistor to the SV08: https://github.com/ss1gohan13/Sovol-SV08-Mainline/blob/main/Extras/Chamber%20Thermistor/BMP280_Readme.md
+:warning: [See how to add a chamber thermistor to the SV08](https://github.com/ss1gohan13/Sovol-SV08-Mainline/tree/main/files-used/config/options/thermistor) :warning:
 
 **Nevermore**:
 Make sure nevermore is named "nevermore" and update XXX.
