@@ -159,7 +159,7 @@ gcode:
   {% set target_chamber = params.CHAMBER|default("40")|int %} #Can be commented out if needed
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
-  SET_FILAMENT_SENSOR SENSOR=filament_sensor ENABLE=1
+
   # Homes the printer, sets absolute positioning and updates the Stealthburner leds.
   #  STATUS_HOMING         # Sets SB-leds to homing-mode
     
@@ -274,7 +274,7 @@ gcode:
   {% set target_chamber = params.CHAMBER|default("40")|int %} #Can be commented out if needed
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
-  SET_FILAMENT_SENSOR SENSOR=filament_sensor ENABLE=1
+
   # Homes the printer, sets absolute positioning and updates the Stealthburner leds.
   #  STATUS_HOMING         # Sets SB-leds to homing-mode
     
