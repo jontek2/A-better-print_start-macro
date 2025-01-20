@@ -2,7 +2,7 @@
   <br>
   <img src="img/start.png" width="75""></a>
   <br>
-    A better start_print macro (SV08 Edition)
+    A better start_print macro
   <br>
 </h1>
 
