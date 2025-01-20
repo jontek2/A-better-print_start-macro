@@ -156,19 +156,17 @@ gcode:
   # This part fetches data from your slicer. Such as bed temp, extruder temp, chamber temp and size of your printer.
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
-  {% set target_chamber = params.CHAMBER|default("40")|int %} #Can be commented out if needed
+  {% set target_chamber = params.CHAMBER|default("40")|int %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
   # Homes the printer, sets absolute positioning and updates the Stealthburner leds.
-  #  STATUS_HOMING         # Sets SB-leds to homing-mode
-    
+    #STATUS_HOMING
     {% if printer.toolhead.homed_axes != "xyz" %}
         G28                      # Full home (XYZ)
         {% else %}
           G28 Z
     {% endif %}
-                
     G90
 
     M400
@@ -181,78 +179,108 @@ gcode:
   # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak.
   {% if params.BED|int > 90 %}
     SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
-  #  STATUS_HEATING                                      # Sets SB-leds to heating-mode
-    M106 S255                                           # Turns on the PT-fan
-    ##  Uncomment if you have a Nevermore.
-  #  SET_PIN PIN=nevermore VALUE=1                      # Turns on the nevermore
+    #STATUS_HEATING                                      # Sets SB-leds to heating-mode
+    M106 S150                                           # Turns on the PT-fan
+
+    #  Uncomment if you have a Nevermore.
+    #SET_PIN PIN=!PC13 VALUE=1                      # Turns on the nevermore
+    #SET_PIN PIN=nevermore VALUE=1                      # Turns on the nevermore
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
     M190 S{target_bed}                                  # Sets the target temp for the bed
     SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber}C"  # Displays info
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for chamber to reach desired temp
 
-  # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak
+  # If the bed temp is not over 90c, then handle soak based on material
   {% else %}
     SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
-  #  STATUS_HEATING                                      # Sets SB-leds to heating-mode
-    M190 S{target_bed}                                  # Sets the target temp for the bed
+    #STATUS_HEATING                                      # Sets SB-leds to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
-    SET_DISPLAY_TEXT MSG="Soak for 5min"                # Displays info
-    G4 P300000                                          # Waits 5 min for the bedtemp to stabilize
+    M190 S{target_bed}                                  # Sets the target temp for the bed
+    
+    # Material-based soak times with variant handling
+    {% set raw_material = params.MATERIAL|default("PLA")|string|upper %}
+    
+    # Extract base material type by handling variants
+    {% set material = namespace(type="") %}
+    {% if "PLA" in raw_material %}
+        {% set material.type = "PLA" %}
+    {% elif "PETG" in raw_material %}
+        {% set material.type = "PETG" %}
+    {% elif "ABS" in raw_material %}
+        {% set material.type = "ABS" %}
+    {% elif "ASA" in raw_material %}
+        {% set material.type = "ASA" %}
+    {% elif "PC" in raw_material %}
+        {% set material.type = "PC" %}
+    {% elif "TPU" in raw_material %}
+        {% set material.type = "TPU" %}
+    {% else %}
+        {% set material.type = raw_material %}
+    {% endif %}
+
+    # Define soak times
+    {% set soak_time = {
+        "PLA": 180000,    # 3 minutes
+        "PETG": 240000,   # 4 minutes
+        "ABS": 300000,    # 5 minutes
+        "ASA": 300000,    # 5 minutes
+        "PC": 300000,     # 5 minutes
+        "TPU": 180000     # 3 minutes
+    }[material.type]|default(300000) %}    # Default to 5 minutes if material not found
+    
+    SET_DISPLAY_TEXT MSG="Soak: {soak_time/60000|int}min ({raw_material})"
+    G4 P{soak_time}
   {% endif %}
 
-  ##  Uncomment for V2 (Quad gantry level AKA QGL)
-  SET_DISPLAY_TEXT MSG="QGL"      # Displays info
-#  STATUS_LEVELING                 # Sets SB-leds to leveling-mode
-    {% if printer.quad_gantry_level.applied == False %}
-        {% if "xyz" not in printer.toolhead.homed_axes %}
-            G28 ; home if not already homed
-            {% else %}
-              G28 Z
-        {% endif %}
-        STATUS_LEVELING
-        QUAD_GANTRY_LEVEL
-        STATUS_HOMING       # Homes Z again after QGL
-        G28 Z
-    {% endif %}
+  ##  Comment out for Trident (Z_TILT_ADJUST)
+  #{% if 'z_tilt' in printer and not printer.z_tilt.applied %}
+  #  STATUS_LEVELING
+  #  SET_DISPLAY_TEXT MSG="Z-tilt adjust"     # Displays info
+  #  Z_TILT_ADJUST                            # Levels the buildplate via z_tilt_adjust
+  #  G28 Z                                    # Homes Z again after z_tilt_adjust
+  #{% endif %}
+
+  ## Comment out for Voron (QUAD_GANTRY_LEVEL)
+  #{% if 'quad_gantry_level' in printer and not printer.quad_gantry_level.applied %}
+  #  STATUS_LEVELING
+  #  SET_DISPLAY_TEXT MSG="QGL"                # Displays info
+  #  QUAD_GANTRY_LEVEL                         # Levels the gantry
+  #  G28 Z                                     # Homes Z again after QGL
+  #{% endif %}
 
   SMART_PARK
 
   # Heating nozzle to 150 degrees. This helps with getting a correct Z-home
-  SET_DISPLAY_TEXT MSG="Hotend: 200C"          # Displays info
-  M109 S200                                    # Heats the nozzle to 200C
+  #STATUS_HEATING
+  SET_DISPLAY_TEXT MSG="Hotend: 150C"          # Displays info
+  M109 S150                                    # Heats the nozzle to 150c
 
- # STATUS_CLEANING
+  #CLEAN_NOZZLE EXTRUDER={target_extruder}     # Pass the actual print temperature for cleaning
 
-  _CLEAN_NOZZLE # See: https://github.com/ss1gohan13/SV08-Replacement-Macros/blob/main/macros/macro.cfg
+  #STATUS_HOMING
+  # Only home Z if leveling was performed
+  #{% if 'z_tilt' in printer and printer.z_tilt.applied %}
+  #    G28 Z                                    # Re-home Z after z_tilt_adjust
+  #{% endif %}
 
+  #STATUS_MESHING
   ##  Uncomment for bed mesh (2 of 2)
   SET_DISPLAY_TEXT MSG="Bed mesh"    # Displays info
-  
-#  STATUS_MESHING                     # Sets SB-leds to bed mesh-mode
-
-  #BED_MESH_CALIBRATE METHOD=RAPID_SCAN ADAPTIVE=1              # Starts bed mesh for eddy
-  BED_MESH_CALIBRATE ADAPTIVE=1                  # Starts bed mesh
-
-  M400
-
-#  STATUS_READY
+  BED_MESH_CALIBRATE ADAPTIVE=1                # Starts bed mesh
 
   SMART_PARK
 
   # Heats up the nozzle up to target via data from slicer
   SET_DISPLAY_TEXT MSG="Hotend: {target_extruder}C"             # Displays info
-#  STATUS_HEATING                                                # Sets SB-leds to heating-mode
+  #STATUS_HEATING                                                # Sets SB-leds to heating-mode
   M107                                                          # Turns off partcooling fan
   M109 S{target_extruder}                                       # Heats the nozzle to printing temp
-  
-  # Gets ready to print by doing a purge line and updating the SB-leds
-  SET_DISPLAY_TEXT MSG="The purge..."          # Displays info
-#  STATUS_CLEANING
 
-  SET_DISPLAY_TEXT MSG="Printer goes brrr"          # Displays info
-  
+  # Gets ready to print by doing a purge line and updating the SB-leds
+  SET_DISPLAY_TEXT MSG="Printer goes brr"          # Displays info
+  #STATUS_CLEANING
   LINE_PURGE
-#  STATUS_PRINTING
+  #STATUS_PRINTING
 ```
 </details>
 
@@ -266,22 +294,19 @@ gcode:
 
 [gcode_macro START_PRINT]
 gcode:
-  # This part fetches data from your slicer. Such as bed temp, extruder temp, chamber temp and size of your printer.
+  # This part fetches data from your slicer. Such as bed temp and extruder temp
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
-  {% set target_chamber = params.CHAMBER|default("40")|int %} #Can be commented out if needed
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
   # Homes the printer, sets absolute positioning and updates the Stealthburner leds.
-  #  STATUS_HOMING         # Sets SB-leds to homing-mode
-    
+    #STATUS_HOMING
     {% if printer.toolhead.homed_axes != "xyz" %}
         G28                      # Full home (XYZ)
         {% else %}
           G28 Z
     {% endif %}
-                
     G90
 
     M400
@@ -291,81 +316,113 @@ gcode:
   ##  Uncomment for bed mesh (1 of 2)
   BED_MESH_CLEAR       # Clears old saved bed mesh (if any)
 
-  # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak.
-  #{% if params.BED|int > 90 %}
-  #  SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
-  #  STATUS_HEATING                                      # Sets SB-leds to heating-mode
-  #  M106 S255                                           # Turns on the PT-fan
-  #  ##  Uncomment if you have a Nevermore.
-  #  SET_PIN PIN=nevermore VALUE=1                      # Turns on the nevermore
-  #  G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
-  #  M190 S{target_bed}                                  # Sets the target temp for the bed
-  #  SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber}C"  # Displays info
-  #  TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for chamber to reach desired temp
+  # Checks if the bed temp is higher than 90c - if so then trigger a time-based heatsoak
+  {% if params.BED|int > 90 %}
+    SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
+    #STATUS_HEATING                                      # Sets SB-leds to heating-mode
+    M106 S150                                           # Turns on the PT-fan
 
-  # If the bed temp is not over 90c, then it skips the heatsoak and just heats up to set temp with a 5min soak
-  #{% else %}
-  SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
-  #STATUS_HEATING                                      # Sets SB-leds to heating-mode
-  M190 S{target_bed}                                  # Sets the target temp for the bed
-  G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
-  SET_DISPLAY_TEXT MSG="Soak for 5min"                # Displays info
-  G4 P300000                                          # Waits 5 min for the bedtemp to stabilize
+    #  Uncomment if you have a Nevermore.
+    #SET_PIN PIN=!PC13 VALUE=1                      # Turns on the nevermore
+    #SET_PIN PIN=nevermore VALUE=1                      # Turns on the nevermore
+    G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
+    M190 S{target_bed}                                  # Sets the target temp for the bed
+    
+    # For high-temp prints, use a fixed 15-minute heatsoak
+    SET_DISPLAY_TEXT MSG="Heatsoak: 15min"             # Displays info
+    G4 P900000                                         # Wait 15 minutes for heatsoak
+
+  # If the bed temp is not over 90c, then handle soak based on material
+  {% else %}
+    SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
+    #STATUS_HEATING                                      # Sets SB-leds to heating-mode
+    G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
+    M190 S{target_bed}                                  # Sets the target temp for the bed
+    
+    # Material-based soak times with variant handling
+    {% set raw_material = params.MATERIAL|default("PLA")|string|upper %}
+    
+    # Extract base material type by handling variants
+    {% set material = namespace(type="") %}
+    {% if "PLA" in raw_material %}
+        {% set material.type = "PLA" %}
+    {% elif "PETG" in raw_material %}
+        {% set material.type = "PETG" %}
+    {% elif "ABS" in raw_material %}
+        {% set material.type = "ABS" %}
+    {% elif "ASA" in raw_material %}
+        {% set material.type = "ASA" %}
+    {% elif "PC" in raw_material %}
+        {% set material.type = "PC" %}
+    {% elif "TPU" in raw_material %}
+        {% set material.type = "TPU" %}
+    {% else %}
+        {% set material.type = raw_material %}
+    {% endif %}
+
+    # Define soak times
+    {% set soak_time = {
+        "PLA": 180000,    # 3 minutes
+        "PETG": 240000,   # 4 minutes
+        "ABS": 300000,    # 5 minutes
+        "ASA": 300000,    # 5 minutes
+        "PC": 300000,     # 5 minutes
+        "TPU": 180000     # 3 minutes
+    }[material.type]|default(300000) %}    # Default to 5 minutes if material not found
+    
+    SET_DISPLAY_TEXT MSG="Soak: {soak_time/60000|int}min ({raw_material})"
+    G4 P{soak_time}
+  {% endif %}
+
+  ##  Comment out for Trident (Z_TILT_ADJUST)
+  #{% if 'z_tilt' in printer and not printer.z_tilt.applied %}
+  #  STATUS_LEVELING
+  #  SET_DISPLAY_TEXT MSG="Z-tilt adjust"     # Displays info
+  #  Z_TILT_ADJUST                            # Levels the buildplate via z_tilt_adjust
+  #  G28 Z                                    # Homes Z again after z_tilt_adjust
   #{% endif %}
 
-  ##  Uncomment for V2 (Quad gantry level AKA QGL)
-  SET_DISPLAY_TEXT MSG="QGL"      # Displays info
-#  STATUS_LEVELING                 # Sets SB-leds to leveling-mode
-    {% if printer.quad_gantry_level.applied == False %}
-        {% if "xyz" not in printer.toolhead.homed_axes %}
-            G28 ; home if not already homed
-            {% else %}
-              G28 Z
-        {% endif %}
-        STATUS_LEVELING
-        QUAD_GANTRY_LEVEL
-        STATUS_HOMING       # Homes Z again after QGL
-        G28 Z
-    {% endif %}
+  ## Comment out for Voron (QUAD_GANTRY_LEVEL)
+  #{% if 'quad_gantry_level' in printer and not printer.quad_gantry_level.applied %}
+  #  STATUS_LEVELING
+  #  SET_DISPLAY_TEXT MSG="QGL"                # Displays info
+  #  QUAD_GANTRY_LEVEL                         # Levels the gantry
+  #  G28 Z                                     # Homes Z again after QGL
+  #{% endif %}
 
   SMART_PARK
 
   # Heating nozzle to 150 degrees. This helps with getting a correct Z-home
-  SET_DISPLAY_TEXT MSG="Hotend: 200C"          # Displays info
-  M109 S200                                    # Heats the nozzle to 200C
+  #STATUS_HEATING
+  SET_DISPLAY_TEXT MSG="Hotend: 150C"          # Displays info
+  M109 S150                                    # Heats the nozzle to 150c
 
- # STATUS_CLEANING
+  #CLEAN_NOZZLE EXTRUDER={target_extruder}     # Pass the actual print temperature for cleaning
 
-  CLEAN_NOZZLE
+  #STATUS_HOMING
+  # Only home Z if leveling was performed
+  #{% if 'z_tilt' in printer and printer.z_tilt.applied %}
+  #    G28 Z                                    # Re-home Z after z_tilt_adjust
+  #{% endif %}
 
+  #STATUS_MESHING
   ##  Uncomment for bed mesh (2 of 2)
   SET_DISPLAY_TEXT MSG="Bed mesh"    # Displays info
-  
-#  STATUS_MESHING                     # Sets SB-leds to bed mesh-mode
-
-  #BED_MESH_CALIBRATE METHOD=RAPID_SCAN ADAPTIVE=1              # Starts bed mesh for eddy
-  BED_MESH_CALIBRATE ADAPTIVE=1                  # Starts bed mesh
-
-  M400
-
-#  STATUS_READY
+  BED_MESH_CALIBRATE ADAPTIVE=1                # Starts bed mesh
 
   SMART_PARK
 
   # Heats up the nozzle up to target via data from slicer
   SET_DISPLAY_TEXT MSG="Hotend: {target_extruder}C"             # Displays info
-#  STATUS_HEATING                                                # Sets SB-leds to heating-mode
+  #STATUS_HEATING                                                # Sets SB-leds to heating-mode
   M107                                                          # Turns off partcooling fan
   M109 S{target_extruder}                                       # Heats the nozzle to printing temp
-  
-  # Gets ready to print by doing a purge line and updating the SB-leds
-  SET_DISPLAY_TEXT MSG="The purge..."          # Displays info
-#  STATUS_CLEANING
 
-  SET_DISPLAY_TEXT MSG="Printer goes brrr"          # Displays info
-  
+  # Gets ready to print by doing a purge line and updating the SB-leds
+  SET_DISPLAY_TEXT MSG="Printer goes brr"          # Displays info
+  #STATUS_CLEANING
   LINE_PURGE
-#  STATUS_PRINTING
+  #STATUS_PRINTING
 ```
 </details>
 
