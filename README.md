@@ -12,7 +12,7 @@ KAMP IS ALSO APPLIED IN THIS MACRO. [Other methods can be used too](https://www.
 
 Last, there are STATUS_ macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect)
 
-<h4>This start_print macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your SV08 printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
+<h4>This start_print macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
 
 <p>I have included an additional START_PRINT macro that does not call for the chamber thermistor if you do not have one. If you do not have a chamber thermistor, the alt macro has a predefined 15min heat soak timer to ensure the chamber is to temp.</p>
 
@@ -73,8 +73,6 @@ sensor_type:  XXX
 sensor_pin:   XXX
 ```
 
-:warning: [See how to add a chamber thermistor to the SV08](https://github.com/ss1gohan13/Sovol-SV08-Mainline/tree/main/files-used/config/options/thermistor) :warning:
-
 **Nevermore**:
 Make sure nevermore is named "nevermore" and update XXX.
 
@@ -87,9 +85,7 @@ shutdown_value: 0
 
 Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your print_end macro to turn the nevermore off.
 
-<b> Since the SV08 doesn't come with a fan installed initially, I have commented out the nevermore to prevent unknown issues. If you setup a nevermore, or similar, please make sure to uncomment it in the start print sequence </b>
-
-# SV08 START_PRINT
+# Print START_PRINT
 
 > [!WARNING]  
 > The macro was updated recently (2025-01-15). If you run in to any issues then please let me know by opening a issue on github.
