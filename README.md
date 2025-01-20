@@ -15,8 +15,7 @@ Last, there are STATUS_ macros built into the start print sequence. These have a
 
 <h4>This start_print macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your SV08 printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
 
-
-<p>In the current state, this macro requires you to have a chamber thermistor. This is necessary to achieve your set chamber temp in your slicer. If you omit the chamber thermistor from the setup, it will not look/call for the chamber thermistor</p>
+<p>I have included an additional START_PRINT macro that does not call for the chamber thermistor if you do not have one. If you do not have a chamber thermistor, the alt macro has a predefined 15min heat soak timer to ensure the chamber is to temp.</p>
 
 ## :warning: Required changes in your slicer :warning:
 You need to update your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
