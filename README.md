@@ -21,10 +21,6 @@ Last, there are STATUS_ macros built into the start print sequence. These have a
 ## :warning: Required changes in your slicer :warning:
 You need to update your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
 
-<b>NOTE:</b> The CHAMBER call can be omitted out for the SV08. If you have a thermistor, by default, when the bed is 90C or above the chamber thermistor will be called and wait until the slicer defined chamber temp. If you do not wish to use chamber thermistor, see the "No chamber thermistor" variants.
-
-e.g. dont add `CHAMBER=[chamber_temperature]` to your slicer if you don't have a chamber thermistor.
-
 <details>
 <summary>SuperSlicer</summary>
 In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
