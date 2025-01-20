@@ -26,7 +26,7 @@ You need to update your "Start G-code" in your slicer to be able to send data fr
 e.g. dont add `CHAMBER=[chamber_temperature]` to your slicer if you don't have a chamber thermistor.
 
 <details>
-<summary>SuperSlicer w/ chamber thermistor</summary>
+<summary>SuperSlicer</summary>
 In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
 ```
@@ -36,17 +36,7 @@ start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 ```
 </details>
 <details>
-<summary>SuperSlicer w/o chamber thermistor</summary>
-In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
-
-```
-M104 S0 ; Stops SuperSlicer from sending temp waits separately
-M140 S0
-start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
-```
-</details>
-<details>
-<summary>OrcaSlicer w/ chamber thermistor</summary>
+<summary>OrcaSlicer</summary>
 In OrcaSlicer go to "Printer settings" -> "Machine start g-code" and update it to:
 
 ```
@@ -56,17 +46,7 @@ start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 ```
 </details>
 <details>
-<summary>OrcaSlicer w/o chamber thermistor</summary>
-In OrcaSlicer go to "Printer settings" -> "Machine start g-code" and update it to:
-
-```
-M104 S0 ; Stops OrcaSlicer from sending temp waits separately
-M140 S0
-start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
-```
-</details>
-<details>
-<summary>PrusaSlicer w/ chamber thermistor</summary>
+<summary>PrusaSlicer</summary>
 
 In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
@@ -77,18 +57,7 @@ start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_laye
 ```
 </details>
 <details>
-<summary>PrusaSlicer w/o chamber thermistor</summary>
-
-In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
-
-```
-M104 S0 ; Stops PrusaSlicer from sending temp waits separately
-M140 S0
-start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature]
-```
-</details>
-<details>
-<summary>Cura w/ chamber thermistor</summary>
+<summary>Cura</summary>
 
 In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and update it to:
 
@@ -96,16 +65,6 @@ In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings"
 start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature}
 ```
 </details>
-<details>
-<summary>Cura w/o chamber thermistor</summary>
-
-In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and update it to:
-
-```
-start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0}
-```
-</details>
-
 
 ## :warning: Required change in your printer.cfg :warning:
 
@@ -153,10 +112,9 @@ Copy either macro and replace your old start_print/start_print macro in your pri
 
 [gcode_macro START_PRINT]
 gcode:
-  # This part fetches data from your slicer. Such as bed temp, extruder temp, chamber temp and size of your printer.
+  # This part fetches data from your slicer. Such as bed temp and extruder temp
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
-  {% set target_chamber = params.CHAMBER|default("40")|int %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
@@ -176,7 +134,7 @@ gcode:
   ##  Uncomment for bed mesh (1 of 2)
   BED_MESH_CLEAR       # Clears old saved bed mesh (if any)
 
-  # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak.
+  # Checks if the bed temp is higher than 90c - if so then trigger a time-based heatsoak
   {% if params.BED|int > 90 %}
     SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
     #STATUS_HEATING                                      # Sets SB-leds to heating-mode
@@ -187,8 +145,10 @@ gcode:
     #SET_PIN PIN=nevermore VALUE=1                      # Turns on the nevermore
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
     M190 S{target_bed}                                  # Sets the target temp for the bed
-    SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber}C"  # Displays info
-    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for chamber to reach desired temp
+    
+    # For high-temp prints, use a fixed 15-minute heatsoak
+    SET_DISPLAY_TEXT MSG="Heatsoak: 15min"             # Displays info
+    G4 P900000                                         # Wait 15 minutes for heatsoak
 
   # If the bed temp is not over 90c, then handle soak based on material
   {% else %}
@@ -285,7 +245,7 @@ gcode:
 </details>
 
 <details>
-<summary>Without a Chamber thermistor</summary>
+<summary>Without a Chamber thermistor (15 min soak)</summary>
   
 ```
 #####################################################################
