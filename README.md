@@ -85,7 +85,7 @@ shutdown_value: 0
 
 Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your print_end macro to turn the nevermore off.
 
-# Print START_PRINT
+# START_PRINT Macro
 
 > [!WARNING]  
 > The macro was updated recently (2025-01-15). If you run in to any issues then please let me know by opening a issue on github.
