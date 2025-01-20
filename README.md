@@ -24,9 +24,9 @@ You need to update your "Start G-code" in your slicer to be able to send data fr
 In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
 
 ```
-M104 S0 ; Stops SuperSlicer from sending temp waits separately
+M104 S0 ; Stops OrcaSlicer from sending temp waits separately
 M140 S0
-start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
+START_PRINT EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] MATERIAL=[filament_type]
 ```
 </details>
 <details>
@@ -36,7 +36,7 @@ In OrcaSlicer go to "Printer settings" -> "Machine start g-code" and update it t
 ```
 M104 S0 ; Stops OrcaSlicer from sending temp waits separately
 M140 S0
-start_print EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
+START_PRINT EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] MATERIAL=[filament_type]
 ```
 </details>
 <details>
@@ -47,7 +47,7 @@ In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and
 ```
 M104 S0 ; Stops PrusaSlicer from sending temp waits separately
 M140 S0
-start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
+start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] MATERIAL=[filament_vendor]
 ```
 </details>
 <details>
@@ -56,7 +56,7 @@ start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_laye
 In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and update it to:
 
 ```
-start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature}
+start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature} MATERIAL={material_type}
 ```
 </details>
 
