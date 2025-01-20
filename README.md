@@ -8,10 +8,9 @@
 
 <b>NOTES:</b>
 
-KAMP IS ALSO APPLIED IN THIS MACRO - THIS IS TO GET RID OF THE LARGE, OBSCURE, PRUGE LINE THAT SOVOL CREATED:
-[Other methods can be used too](https://www.printables.com/model/1035759-adaptive-purge-for-any-3d-printer-using-slicer-var)
+KAMP IS ALSO APPLIED IN THIS MACRO. [Other methods can be used too](https://www.printables.com/model/1035759-adaptive-purge-for-any-3d-printer-using-slicer-var)
 
-Last, there are STATUS_ macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your SV08, look here](https://github.com/julianschill/klipper-led_effect)
+Last, there are STATUS_ macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect)
 
 <h4>This start_print macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your SV08 printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
 
@@ -102,7 +101,7 @@ Copy either macro and replace your old start_print/start_print macro in your pri
   
 ```
 #####################################################################
-#   A better start_print macro for SV08
+#   A better start_print macro
 #####################################################################
 
 [gcode_macro START_PRINT]
@@ -244,7 +243,7 @@ gcode:
   
 ```
 #####################################################################
-#   A better start_print macro for SV08
+#   A better start_print macro
 #####################################################################
 
 [gcode_macro START_PRINT]
