@@ -397,4 +397,4 @@ A big thank you to the Voron Communuity for helping make this macro.
 
 ## Feedback
 
-If you have feedback please reach out to me on Voron Discord (jontek2) or open an issue on github.
+If you have feedback please open an issue on github.
