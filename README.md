@@ -8,7 +8,7 @@
 
 <b>NOTES:</b>
 
-KAMP IS ALSO APPLIED IN THIS MACRO. [Other methods can be used too](https://www.printables.com/model/1035759-adaptive-purge-for-any-3d-printer-using-slicer-var)
+[KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) IS ALSO APPLIED IN THIS MACRO. [Other methods can be used too](https://www.printables.com/model/1035759-adaptive-purge-for-any-3d-printer-using-slicer-var)
 
 Last, there are STATUS_ macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect)
 
