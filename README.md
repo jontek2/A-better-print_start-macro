@@ -156,26 +156,23 @@ gcode:
         {% set material.type = "PLA" %}
     {% elif "PETG" in raw_material %}
         {% set material.type = "PETG" %}
-    {% elif "ABS" in raw_material %}
-        {% set material.type = "ABS" %}
-    {% elif "ASA" in raw_material %}
-        {% set material.type = "ASA" %}
-    {% elif "PC" in raw_material %}
-        {% set material.type = "PC" %}
-    {% elif "TPU" in raw_material %}
+    {% elif "TPU" in raw_material or "TPE" in raw_material %}
         {% set material.type = "TPU" %}
+    {% elif "PVA" in raw_material %}
+        {% set material.type = "PVA" %}
+    {% elif "HIPS" in raw_material %}
+        {% set material.type = "HIPS" %}
     {% else %}
         {% set material.type = raw_material %}
     {% endif %}
 
     # Define soak times
     {% set soak_time = {
-        "PLA": 180000,    # 3 minutes
-        "PETG": 240000,   # 4 minutes
-        "ABS": 300000,    # 5 minutes
-        "ASA": 300000,    # 5 minutes
-        "PC": 300000,     # 5 minutes
-        "TPU": 180000     # 3 minutes
+        "PLA": 180000,    # 3 minutes - Standard PLA soak time
+        "PETG": 240000,   # 4 minutes - PETG needs slightly longer to stabilize
+        "TPU": 180000,    # 3 minutes - TPU/TPE materials
+        "PVA": 180000,    # 3 minutes - Support material, similar to PLA
+        "HIPS": 240000    # 4 minutes - When used as support/primary under 90C
     }[material.type]|default(300000) %}    # Default to 5 minutes if material not found
     
     SET_DISPLAY_TEXT MSG="Soak: {soak_time/60000|int}min ({raw_material})"
@@ -266,11 +263,11 @@ gcode:
   ##  Uncomment for bed mesh (1 of 2)
   BED_MESH_CLEAR       # Clears old saved bed mesh (if any)
 
-  # Checks if the bed temp is higher than 90c - if so then trigger a time-based heatsoak
+  # Checks if the bed temp is higher than 90c - if so then trigger a fixed 15-minute heatsoak
   {% if params.BED|int > 90 %}
     SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
     #STATUS_HEATING                                      # Sets SB-leds to heating-mode
-    M106 S150                                           # Turns on the PT-fan
+    M106 S255                                           # Turns on the PT-fan at full speed for high temp
 
     #  Uncomment if you have a Nevermore.
     #SET_PIN PIN=!PC13 VALUE=1                      # Turns on the nevermore
@@ -278,14 +275,15 @@ gcode:
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
     M190 S{target_bed}                                  # Sets the target temp for the bed
     
-    # For high-temp prints, use a fixed 15-minute heatsoak
-    SET_DISPLAY_TEXT MSG="Heatsoak: 15min"             # Displays info
-    G4 P900000                                         # Wait 15 minutes for heatsoak
+    # Fixed 15-minute heatsoak for all high-temp materials (ABS/ASA/PC)
+    SET_DISPLAY_TEXT MSG="High Temp Heatsoak: 15min"    # Displays info
+    G4 P900000                                          # Wait 15 minutes for heatsoak
 
   # If the bed temp is not over 90c, then handle soak based on material
   {% else %}
     SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"           # Displays info
     #STATUS_HEATING                                      # Sets SB-leds to heating-mode
+    M106 S150                                           # Turns on the PT-fan at lower speed for low temp
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
     M190 S{target_bed}                                  # Sets the target temp for the bed
     
@@ -298,26 +296,23 @@ gcode:
         {% set material.type = "PLA" %}
     {% elif "PETG" in raw_material %}
         {% set material.type = "PETG" %}
-    {% elif "ABS" in raw_material %}
-        {% set material.type = "ABS" %}
-    {% elif "ASA" in raw_material %}
-        {% set material.type = "ASA" %}
-    {% elif "PC" in raw_material %}
-        {% set material.type = "PC" %}
-    {% elif "TPU" in raw_material %}
+    {% elif "TPU" in raw_material or "TPE" in raw_material %}
         {% set material.type = "TPU" %}
+    {% elif "PVA" in raw_material %}
+        {% set material.type = "PVA" %}
+    {% elif "HIPS" in raw_material %}
+        {% set material.type = "HIPS" %}
     {% else %}
         {% set material.type = raw_material %}
     {% endif %}
 
     # Define soak times
     {% set soak_time = {
-        "PLA": 180000,    # 3 minutes
-        "PETG": 240000,   # 4 minutes
-        "ABS": 300000,    # 5 minutes
-        "ASA": 300000,    # 5 minutes
-        "PC": 300000,     # 5 minutes
-        "TPU": 180000     # 3 minutes
+        "PLA": 180000,    # 3 minutes - Standard PLA soak time
+        "PETG": 240000,   # 4 minutes - PETG needs slightly longer to stabilize
+        "TPU": 180000,    # 3 minutes - TPU/TPE materials
+        "PVA": 180000,    # 3 minutes - Support material, similar to PLA
+        "HIPS": 240000    # 4 minutes - When used as support/primary under 90C
     }[material.type]|default(300000) %}    # Default to 5 minutes if material not found
     
     SET_DISPLAY_TEXT MSG="Soak: {soak_time/60000|int}min ({raw_material})"
