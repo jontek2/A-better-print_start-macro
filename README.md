@@ -205,10 +205,10 @@ gcode:
   #CLEAN_NOZZLE EXTRUDER={target_extruder}     # Pass the actual print temperature for cleaning
 
   #STATUS_HOMING
-  # Only home Z if leveling was performed
-  #{% if 'z_tilt' in printer and printer.z_tilt.applied %}
-  #    G28 Z                                    # Re-home Z after z_tilt_adjust
-  #{% endif %}
+  # Only home Z if leveling (Z-tilt or QGL) was performed
+  {% if ('z_tilt' in printer and printer.z_tilt.applied) or ('quad_gantry_level' in printer and printer.quad_gantry_level.applied) %}
+      G28 Z                                    # Re-home Z after z_tilt_adjust or QGL
+  {% endif %}
 
   #STATUS_MESHING
   ##  Uncomment for bed mesh (2 of 2)
