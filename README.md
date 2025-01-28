@@ -60,7 +60,7 @@ start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temp
 ```
 </details>
 
-## :warning: REQUIRED (and/pr OPTIONAL) changes in your printer.cfg :warning:
+## :warning: REQUIRED (and/or OPTIONAL) changes in your printer.cfg :warning:
 
 The start_print macro has predefined names for nevermore and chamber thermistor. Make sure that yours are named correctly. In your printer.cfg file verify the following:
 
