@@ -106,7 +106,6 @@ gcode:
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
   {% set target_chamber = params.CHAMBER|default("40")|int %} # Can be commented out if needed
-  {% set INPUT_TEMP = params.TEMP|default(65)|int %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
