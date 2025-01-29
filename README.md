@@ -102,9 +102,11 @@ Copy either macro and replace your old start_print/start_print macro in your pri
 
 [gcode_macro START_PRINT]
 gcode:
-  # This part fetches data from your slicer. Such as bed temp and extruder temp
+  # This part fetches data from your slicer, such as bed temp, extruder temp, chamber temp, and the size of your printer.
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
+  {% set target_chamber = params.CHAMBER|default("40")|int %} # Can be commented out if needed
+  {% set INPUT_TEMP = params.TEMP|default(65)|int %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
