@@ -90,7 +90,7 @@ Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your print_end macro to t
 > [!WARNING]  
 > The macro was updated recently (2025-01-15). If you run in to any issues then please let me know by opening a issue on github.
 
-Copy either macro and replace your old start_print/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and uncomment parts of this macro.
+Copy either macro and replace your old print_start/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and uncomment parts of this macro.
 
 <details>
 <summary>With a Chamber thermistor</summary>
