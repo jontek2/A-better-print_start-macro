@@ -17,7 +17,7 @@ Last, there are STATUS_ macros built into the start print sequence. These have a
 <p>I have included an additional START_PRINT macro that does not call for the chamber thermistor if you do not have one. If you do not have a chamber thermistor, the alt macro has a predefined 15min heat soak timer to ensure the chamber is to temp.</p>
 
 ## :warning: Required changes in your slicer :warning:
-You need to update your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
+You need to replace your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
 
 <details>
 <summary>SuperSlicer</summary>
