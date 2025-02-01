@@ -376,6 +376,8 @@ gcode:
 
 Hungry for more macromania? Make sure to check out these awesome links.
 
+- [A Better End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro)
+- [More replacement SV08 Macros](https://github.com/ss1gohan13/SV08-Replacement-Macros)
 - [Mjonuschat optimized bed leveling macros for](https://mjonuschat.github.io/voron-mods/docs/guides/optimized-bed-leveling-macros/)
 - [Ellis Useful Macros](https://ellis3dp.com/Print-Tuning-Guide/articles/index_useful_macros.html)
 - [Voron Klipper Macros](https://github.com/The-Conglomerate/Voron-Klipper-Common/)
