@@ -88,7 +88,7 @@ Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your [End Print Macro](ht
 # START_PRINT Macro
 
 > [!WARNING]  
-> The macro was updated recently (2025-01-15). If you run in to any issues then please let me know by opening a issue on github.
+> The macro was updated recently (02-01-2025). If you run in to any issues then please let me know by opening a issue on github.
 
 Copy either macro and replace your old print_start/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and uncomment parts of this macro.
 
@@ -370,7 +370,8 @@ gcode:
 
 ## Changelog
 
-2025-01-11: Initial creation 
+01-11-2025: Initial creation 
+02-01-2025: WTFBBQAUCE I forgot to put all of the changes down. It's been a lot of formatting, additions, ect. 
 
 ## Interested in more macros?
 
