@@ -10,7 +10,7 @@
 
 [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) IS ALSO APPLIED IN THIS MACRO. [Other methods can be used too](https://www.printables.com/model/1035759-adaptive-purge-for-any-3d-printer-using-slicer-var)
 
-Last, there are STATUS_ macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect)
+There are STATUS_ macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect)
 
 <h4>This start_print macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
 
