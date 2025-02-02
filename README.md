@@ -110,38 +110,36 @@ gcode:
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
   # Homes the printer, sets absolute positioning, and updates the Stealthburner LEDs.
-  #STATUS_HOMING                                                 # Sets SB-LEDs to homing-mode
+  #STATUS_HOMING                                                    # Sets SB-LEDs to homing-mode
 
   {% if printer.toolhead.homed_axes != "xyz" %}
-    G28                                                         # Full home (XYZ)
+    G28                                                            # Full home (XYZ)
   {% else %}
-    G28 Z                                                       # Home only Z if X and Y have been homed
+    G28 Z                                                         # Home only Z if X and Y have been homed
   {% endif %}
                 
-  G90                                                           # Use absolute/relative coordinates
-
-  M400                                                          # Wait for current moves to finish
-
-  CLEAR_PAUSE
+  G90                                                             # Use absolute/relative coordinates
+  M400                                                            # Wait for current moves to finish
+  CLEAR_PAUSE                                                     # Clear any existing pause state
 
   # Uncomment for bed mesh (1 of 2)
-  BED_MESH_CLEAR                                                # Clears old saved bed mesh (if any)
+  BED_MESH_CLEAR                                                  # Clears old saved bed mesh (if any)
 
   # Checks if the bed temp is higher than 90C - if so, then trigger a heat soak.
   {% if params.BED|int > 90 %}
-    SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"                   # Displays info
+    M117 Bed: {target_bed}C                                      # Display bed temperature
     #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
-    M106 S255                                                   # Turns on the PT-fan
+    M106 S255                                                    # Turns on the PT-fan
     # Uncomment if you have a Nevermore.
-    SET_PIN PIN=nevermore VALUE=1                               # Turns on the Nevermore
+    SET_PIN PIN=nevermore VALUE=1                                # Turns on the Nevermore
     G1 X{x_wait} Y{y_wait} Z15 F9000                            # Go to the center of the bed
     M190 S{target_bed}                                          # Sets the target temp for the bed
-    SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber}C"          # Displays info
+    M117 Heatsoak: {target_chamber}C                            # Display heatsoak info
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for the chamber to reach the desired temp
 
- # If the bed temp is not over 90c, then handle soak based on material
+  # If the bed temp is not over 90c, then handle soak based on material
   {% else %}
-    SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"                   # Displays info
+    M117 Bed: {target_bed}C                                     # Display bed temperature
     #STATUS_HEATING                                              # Sets SB-leds to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                            # Go to center of the bed
     M190 S{target_bed}                                          # Sets the target temp for the bed
@@ -174,14 +172,14 @@ gcode:
         "HIPS": 240000    # 4 minutes - When used as support/primary under 90C
     }[material.type]|default(300000) %}    # Default to 5 minutes if material not found
     
-    SET_DISPLAY_TEXT MSG="Soak: {soak_time/60000|int}min ({raw_material})"
-    G4 P{soak_time}
+    M117 Soak: {soak_time/60000|int}min ({raw_material})        # Display soak time and material
+    G4 P{soak_time}                                             # Execute soak timer
   {% endif %}
 
   #   # Comment out for Trident (Z_TILT_ADJUST)
   # {% if 'z_tilt' in printer and not printer.z_tilt.applied %}
   #   #STATUS_LEVELING                                            # Sets SB-LEDs to leveling-mode
-  #   SET_DISPLAY_TEXT MSG="Z-tilt adjust"                       # Displays info
+  #   M117 Z-tilt adjust                                         # Display Z-tilt adjustment
   #   Z_TILT_ADJUST                                              # Levels the buildplate via z_tilt_adjust
   #   G28 Z                                                      # Homes Z again after z_tilt_adjust
   # {% endif %}
@@ -189,7 +187,7 @@ gcode:
   # Uncomment for V2 (Quad gantry level AKA QGL)
   #{% if printer.quad_gantry_level.applied == False %}
   #  #STATUS_LEVELING                                             # Sets SB-LEDs to leveling-mode
-  #  SET_DISPLAY_TEXT MSG="QGL"                                  # Displays info
+  #  M117 QGL                                                    # Display QGL status
   #  QUAD_GANTRY_LEVEL                                           # Levels the gantry
   #  #STATUS_HOMING                                               # Sets SB-LEDs to homing-mode
   #  G28 Z                                                       # Homes Z again after QGL
@@ -197,37 +195,37 @@ gcode:
 
   # Heating the nozzle to 150C. This helps with getting a correct Z-home
   #STATUS_HEATING                                                # Sets SB-LEDs to heating-mode
-  SET_DISPLAY_TEXT MSG="Hotend: 150C"                           # Displays info
+  M117 Hotend: 150C                                             # Display hotend temperature
   M109 S150                                                     # Heats the nozzle to 150C
 
   #STATUS_CLEANING                                               # Sets SB-LEDs to cleaning-mode
-  CLEAN_NOZZLE EXTRUDER={target_extruder}                       # See: https://github.com/ss1gohan13/SV08-Replacement-Macros/blob/main/macros/macro.cfg
+  CLEAN_NOZZLE EXTRUDER={target_extruder}                      # Clean nozzle before printing
 
   SMART_PARK                                                    # Parks the toolhead neat the beginning of the print
 
   # Uncomment for bed mesh (2 of 2)
-  #STATUS_MESHING                                                # Sets SB-LEDs to bed mesh-mode
-  SET_DISPLAY_TEXT MSG="Bed mesh"                               # Displays info
+  #STATUS_MESHING                                               # Sets SB-LEDs to bed mesh-mode
+  M117 Bed mesh                                                # Display bed mesh status
   BED_MESH_CALIBRATE ADAPTIVE=1                                # Starts bed mesh
 
-  M400                                                          # Wait for current moves to finish
+  M400                                                         # Wait for current moves to finish
 
-  SMART_PARK                                                    # KAMP smart park
+  SMART_PARK                                                   # KAMP smart park
 
   # Heats up the nozzle to target via data from the slicer
-  SET_DISPLAY_TEXT MSG="Hotend: {target_extruder}C"             # Displays info
-  #STATUS_HEATING                                                # Sets SB-LEDs to heating-mode
-  M107                                                          # Turns off part cooling fan
-  M109 S{target_extruder}                                       # Heats the nozzle to printing temp
+  M117 Hotend: {target_extruder}C                             # Display target hotend temperature
+  #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
+  M107                                                        # Turns off part cooling fan
+  M109 S{target_extruder}                                     # Heats the nozzle to printing temp
   
   # Gets ready to print by doing a purge line and updating the SB-LEDs
-  SET_DISPLAY_TEXT MSG="The purge..."                           # Displays info
-  #STATUS_CLEANING                                               # Sets SB-LEDs to cleaning-mode
-  LINE_PURGE                                                    # KAMP line purge
+  M117 The purge...                                           # Display purge status
+  #STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
+  LINE_PURGE                                                  # KAMP line purge
 
-  SET_DISPLAY_TEXT MSG="Printer goes brrr"                      # Displays info
+  M117 Printer goes brrr                                      # Display print starting
   
-  #STATUS_PRINTING                                               # Sets SB-LEDs to printing-mode
+  #STATUS_PRINTING                                             # Sets SB-LEDs to printing-mode
 ```
 </details>
 
@@ -248,40 +246,38 @@ gcode:
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
   # Homes the printer, sets absolute positioning, and updates the Stealthburner LEDs.
-  #STATUS_HOMING                                                 # Sets SB-LEDs to homing-mode
+  #STATUS_HOMING                                                    # Sets SB-LEDs to homing-mode
 
   {% if printer.toolhead.homed_axes != "xyz" %}
-    G28                                                         # Full home (XYZ)
+    G28                                                            # Full home (XYZ)
   {% else %}
-    G28 Z                                                       # Home only Z if X and Y have been homed
+    G28 Z                                                         # Home only Z if X and Y have been homed
   {% endif %}
                 
-  G90                                                           # Use absolute/relative coordinates
-
-  M400                                                          # Wait for current moves to finish
-
-  CLEAR_PAUSE
+  G90                                                             # Use absolute/relative coordinates
+  M400                                                            # Wait for current moves to finish
+  CLEAR_PAUSE                                                     # Clear any existing pause state
 
   # Uncomment for bed mesh (1 of 2)
-  BED_MESH_CLEAR                                                # Clears old saved bed mesh (if any)
+  BED_MESH_CLEAR                                                  # Clears old saved bed mesh (if any)
 
   # Checks if the bed temp is higher than 90C - if so, then trigger a fixed 15-minute heatsoak
   {% if params.BED|int > 90 %}
-    SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"                   # Displays info
+    M117 Bed: {target_bed}C                                      # Display bed temperature
     #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
-    M106 S255                                                   # Turns on the PT-fan at full speed for high temp
+    M106 S255                                                    # Turns on the PT-fan at full speed for high temp
     # Uncomment if you have a Nevermore.
     #SET_PIN PIN=nevermore VALUE=1                               # Turns on the Nevermore
     G1 X{x_wait} Y{y_wait} Z15 F9000                            # Go to the center of the bed
     M190 S{target_bed}                                          # Sets the target temp for the bed
-    SET_DISPLAY_TEXT MSG="High Temp Heatsoak: 15min"            # Displays info
+    M117 High Temp Heatsoak: 15min                              # Display heatsoak info
     G4 P900000                                                  # Wait 15 minutes for heatsoak
 
   # If the bed temp is not over 90c, then handle soak based on material
   {% else %}
-    SET_DISPLAY_TEXT MSG="Bed: {target_bed}C"                   # Displays info
+    M117 Bed: {target_bed}C                                     # Display bed temperature
     #STATUS_HEATING                                              # Sets SB-leds to heating-mode
-    M106 S150                                                   # Turns on the PT-fan at lower speed for low temp
+    M106 S150                                                    # Turns on the PT-fan at lower speed for low temp
     G1 X{x_wait} Y{y_wait} Z15 F9000                            # Go to center of the bed
     M190 S{target_bed}                                          # Sets the target temp for the bed
     
@@ -313,14 +309,14 @@ gcode:
         "HIPS": 240000    # 4 minutes - When used as support/primary under 90C
     }[material.type]|default(300000) %}    # Default to 5 minutes if material not found
     
-    SET_DISPLAY_TEXT MSG="Soak: {soak_time/60000|int}min ({raw_material})"
-    G4 P{soak_time}
+    M117 Soak: {soak_time/60000|int}min ({raw_material})        # Display soak time and material
+    G4 P{soak_time}                                             # Execute soak timer
   {% endif %}
 
   # Comment out for Trident (Z_TILT_ADJUST)
   #{% if 'z_tilt' in printer and not printer.z_tilt.applied %}
   #  STATUS_LEVELING                                            # Sets SB-LEDs to leveling-mode
-  #  SET_DISPLAY_TEXT MSG="Z-tilt adjust"                       # Displays info
+  #  M117 Z-tilt adjust                                        # Display Z-tilt adjustment
   #  Z_TILT_ADJUST                                              # Levels the buildplate via z_tilt_adjust
   #  G28 Z                                                      # Homes Z again after z_tilt_adjust
   #{% endif %}
@@ -328,7 +324,7 @@ gcode:
   # Comment out for V2 (Quad gantry level AKA QGL)
   #{% if printer.quad_gantry_level.applied == False %}
   #  STATUS_LEVELING                                             # Sets SB-LEDs to leveling-mode
-  #  SET_DISPLAY_TEXT MSG="QGL"                                  # Displays info
+  #  M117 QGL                                                    # Display QGL status
   #  QUAD_GANTRY_LEVEL                                           # Levels the gantry
   #  STATUS_HOMING                                               # Sets SB-LEDs to homing-mode
   #  G28 Z                                                       # Homes Z again after QGL
@@ -336,35 +332,35 @@ gcode:
 
   # Heating the nozzle to 150C. This helps with getting a correct Z-home
   #STATUS_HEATING                                                # Sets SB-LEDs to heating-mode
-  SET_DISPLAY_TEXT MSG="Hotend: 150C"                           # Displays info
+  M117 Hotend: 150C                                             # Display hotend temperature
   M109 S150                                                     # Heats the nozzle to 150C
 
   #STATUS_CLEANING                                               # Sets SB-LEDs to cleaning-mode
-  CLEAN_NOZZLE EXTRUDER={target_extruder}                       # See: https://github.com/ss1gohan13/SV08-Replacement-Macros/blob/main/macros/macro.cfg
+  CLEAN_NOZZLE EXTRUDER={target_extruder}                      # Clean nozzle before printing
 
   SMART_PARK                                                    # Parks the toolhead near the beginning of the print
 
   # Uncomment for bed mesh (2 of 2)
-  #STATUS_MESHING                                                # Sets SB-LEDs to bed mesh-mode
-  SET_DISPLAY_TEXT MSG="Bed mesh"                               # Displays info
-  BED_MESH_CALIBRATE ADAPTIVE=1                                 # Starts bed mesh
+  #STATUS_MESHING                                               # Sets SB-LEDs to bed mesh-mode
+  M117 Bed mesh                                                # Display bed mesh status
+  BED_MESH_CALIBRATE ADAPTIVE=1                                # Starts bed mesh
 
-  M400                                                          # Wait for current moves to finish
+  M400                                                         # Wait for current moves to finish
 
-  SMART_PARK                                                    # KAMP smart park
+  SMART_PARK                                                   # KAMP smart park
 
   # Heats up the nozzle to target via data from the slicer
-  SET_DISPLAY_TEXT MSG="Hotend: {target_extruder}C"             # Displays info
-  #STATUS_HEATING                                                # Sets SB-LEDs to heating-mode
-  M107                                                          # Turns off part cooling fan
-  M109 S{target_extruder}                                       # Heats the nozzle to printing temp
+  M117 Hotend: {target_extruder}C                             # Display target hotend temperature
+  #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
+  M107                                                        # Turns off part cooling fan
+  M109 S{target_extruder}                                     # Heats the nozzle to printing temp
   
   # Gets ready to print by doing a purge line and updating the SB-LEDs
-  SET_DISPLAY_TEXT MSG="Printer goes brrr"                      # Displays info
-  #STATUS_CLEANING                                               # Sets SB-LEDs to cleaning-mode
-  LINE_PURGE                                                    # KAMP line purge
+  M117 Printer goes brrr                                      # Display print starting
+  #STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
+  LINE_PURGE                                                  # KAMP line purge
   
-  #STATUS_PRINTING                                               # Sets SB-LEDs to printing-mode
+  #STATUS_PRINTING                                             # Sets SB-LEDs to printing-mode
 ```
 </details>
 
