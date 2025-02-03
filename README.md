@@ -112,10 +112,18 @@ gcode:
   # Homes the printer, sets absolute positioning, and updates the Stealthburner LEDs.
   #STATUS_HOMING                                                    # Sets SB-LEDs to homing-mode
 
-  {% if printer.toolhead.homed_axes != "xyz" %}
-    G28                                                            # Full home (XYZ)
-  {% else %}
-    G28 Z                                                         # Home only Z if X and Y have been homed
+  {% if not 'xyz' in printer.toolhead.homed_axes %}
+      # If not fully homed, check if X and Y are homed
+      {% if not ('x' in printer.toolhead.homed_axes and 'y' in printer.toolhead.homed_axes) %}
+          # If X or Y not homed, do full homing
+          G28
+      {% else %}
+          # If only X and Y are homed, check if Z is homed
+          {% if not 'z' in printer.toolhead.homed_axes %}
+              # If Z is not homed, home Z
+              G28 Z
+          {% endif %}
+      {% endif %}
   {% endif %}
                 
   G90                                                             # Use absolute/relative coordinates
@@ -248,10 +256,18 @@ gcode:
   # Homes the printer, sets absolute positioning, and updates the Stealthburner LEDs.
   #STATUS_HOMING                                                    # Sets SB-LEDs to homing-mode
 
-  {% if printer.toolhead.homed_axes != "xyz" %}
-    G28                                                            # Full home (XYZ)
-  {% else %}
-    G28 Z                                                         # Home only Z if X and Y have been homed
+  {% if not 'xyz' in printer.toolhead.homed_axes %}
+      # If not fully homed, check if X and Y are homed
+      {% if not ('x' in printer.toolhead.homed_axes and 'y' in printer.toolhead.homed_axes) %}
+          # If X or Y not homed, do full homing
+          G28
+      {% else %}
+          # If only X and Y are homed, check if Z is homed
+          {% if not 'z' in printer.toolhead.homed_axes %}
+              # If Z is not homed, home Z
+              G28 Z
+          {% endif %}
+      {% endif %}
   {% endif %}
                 
   G90                                                             # Use absolute/relative coordinates
