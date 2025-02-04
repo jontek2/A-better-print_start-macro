@@ -209,6 +209,12 @@ gcode:
   #STATUS_CLEANING                                               # Sets SB-LEDs to cleaning-mode
   CLEAN_NOZZLE EXTRUDER={target_extruder}                      # Clean nozzle before printing
 
+  #STATUS_COOLING                                                # Sets SB-LEDs to cooling-mode
+  #M109 S150                                                     # Heats the nozzle to 150C
+
+  #M117 Tappy Tap                                               # Display tappy tap message
+  #PROBE_EDDY_NG_TAP                                             # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
+
   SMART_PARK                                                    # Parks the toolhead neat the beginning of the print
 
   # Uncomment for bed mesh (2 of 2)
@@ -353,6 +359,12 @@ gcode:
 
   #STATUS_CLEANING                                               # Sets SB-LEDs to cleaning-mode
   CLEAN_NOZZLE EXTRUDER={target_extruder}                      # Clean nozzle before printing
+
+  #STATUS_COOLING                                                # Sets SB-LEDs to cooling-mode
+  #M109 S150                                                     # Heats the nozzle to 150C
+
+  #M117 Tappy Tap                                               # Display tappy tap message
+  #PROBE_EDDY_NG_TAP                                             # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
 
   SMART_PARK                                                    # Parks the toolhead near the beginning of the print
 
