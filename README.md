@@ -189,22 +189,18 @@ gcode:
       G4 P{soak_time}                                             # Execute soak timer
     {% endif %}
 
-    # Comment out for Trident (Z_TILT_ADJUST)
-    # {% if 'z_tilt' in printer and not printer.z_tilt.applied %}
-    #   #STATUS_LEVELING                                            # Sets SB-LEDs to leveling-mode
-    #   M117 Z-tilt adjust                                         # Display Z-tilt adjustment
-    #   Z_TILT_ADJUST                                              # Levels the buildplate via z_tilt_adjust
-    #   G28 Z                                                      # Homes Z again after z_tilt_adjust
-    # {% endif %}
-
-    # Uncomment for V2 (Quad gantry level AKA QGL)
-    #{% if printer.quad_gantry_level.applied == False %}
-    #  #STATUS_LEVELING                                             # Sets SB-LEDs to leveling-mode
-    #  M117 QGL                                                    # Display QGL status
-    #  QUAD_GANTRY_LEVEL                                           # Levels the gantry
-    #  #STATUS_HOMING                                               # Sets SB-LEDs to homing-mode
-    #  G28 Z                                                       # Homes Z again after QGL
-    #{% endif %}
+    {% if has_z_tilt %}
+      #STATUS_LEVELING                                            # Sets SB-LEDs to leveling-mode
+      M117 Z-tilt adjust                                         # Display Z-tilt adjustment
+      Z_TILT_ADJUST                                              # Levels the buildplate via z_tilt_adjust
+      G28 Z                                                      # Homes Z again after z_tilt_adjust
+    {% elif has_quad_gantry %}
+      #STATUS_LEVELING                                             # Sets SB-LEDs to leveling-mode
+      M117 QGL                                                    # Display QGL status
+      QUAD_GANTRY_LEVEL                                           # Levels the gantry
+      #STATUS_HOMING                                               # Sets SB-LEDs to homing-mode
+      G28 Z                                                       # Homes Z again after QGL
+    {% endif %}
 
     # Heating the nozzle to 150C. This helps with getting a correct Z-home
     #STATUS_HEATING                                                # Sets SB-LEDs to heating-mode
