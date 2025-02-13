@@ -140,8 +140,10 @@ gcode:
       M117 Bed: {target_bed}C                                      # Display bed temperature
       #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
       M106 S255                                                    # Turns on the PT-fan
-      # Uncomment if you have a Nevermore.
-      SET_PIN PIN=nevermore VALUE=1                                # Turns on the Nevermore
+      # Conditional check for nevermore pin
+      {% if 'nevermore' in printer.configfile.settings %}
+        SET_PIN PIN=nevermore VALUE=1                                # Turns on the Nevermore
+      {% endif %}
       G1 X{x_wait} Y{y_wait} Z15 F9000                            # Go to the center of the bed
       M190 S{target_bed}                                          # Sets the target temp for the bed
       M117 Heatsoak: {target_chamber}C                            # Display heatsoak info
