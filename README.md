@@ -108,6 +108,8 @@ gcode:
     {% set target_chamber = params.CHAMBER|default("40")|int %}
     {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
     {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
+    {% set has_z_tilt = 'z_tilt' in printer and not printer.z_tilt.applied %}
+    {% set has_quad_gantry = printer.quad_gantry_level.applied == False if 'quad_gantry_level' in printer else False %}
 
     # Homes the printer, sets absolute positioning, and updates the Stealthburner LEDs.
     #STATUS_HOMING
@@ -189,6 +191,7 @@ gcode:
       G4 P{soak_time}                                             # Execute soak timer
     {% endif %}
 
+    # Conditional method for Z_TILT_ADJUST and QUAD_GANTRY_LEVEL
     {% if has_z_tilt %}
       #STATUS_LEVELING                                            # Sets SB-LEDs to leveling-mode
       M117 Z-tilt adjust                                         # Display Z-tilt adjustment
