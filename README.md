@@ -90,312 +90,171 @@ Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your [End Print Macro](ht
 > [!WARNING]  
 > The macro was updated recently (02-01-2025). If you run in to any issues then please let me know by opening a issue on github.
 
-Copy either macro and replace your old print_start/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and uncomment parts of this macro.
+Copy the macro and replace it with your old print_start/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and uncomment parts of this macro.
 
 <details>
 <summary>With a Chamber thermistor</summary>
   
 ```
 #####################################################################
-#   A better start_print macro
+#------------------- A better start_print macro --------------------#
 #####################################################################
 
 [gcode_macro START_PRINT]
 gcode:
-  # This part fetches data from your slicer, such as bed temp, extruder temp, chamber temp, and the size of your printer.
-  {% set target_bed = params.BED|int %}
-  {% set target_extruder = params.EXTRUDER|int %}
-  {% set target_chamber = params.CHAMBER|default("40")|int %}
-  {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
-  {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
+    # This part fetches data from your slicer, such as bed temp, extruder temp, chamber temp, and the size of your printer.
+    {% set target_bed = params.BED|int %}
+    {% set target_extruder = params.EXTRUDER|int %}
+    {% set target_chamber = params.CHAMBER|default("40")|int %}
+    {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
+    {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
-  # Homes the printer, sets absolute positioning, and updates the Stealthburner LEDs.
-  #STATUS_HOMING                                                    # Sets SB-LEDs to homing-mode
+    # Homes the printer, sets absolute positioning, and updates the Stealthburner LEDs.
+    #STATUS_HOMING
 
-  {% if not 'xyz' in printer.toolhead.homed_axes %}
-      # If not fully homed, check if X and Y are homed
-      {% if not ('x' in printer.toolhead.homed_axes and 'y' in printer.toolhead.homed_axes) %}
-          # If X or Y not homed, do full homing
-          G28
-      {% else %}
-          # If only X and Y are homed, check if Z is homed
-          {% if not 'z' in printer.toolhead.homed_axes %}
-              # If Z is not homed, home Z
-              G28 Z
-          {% endif %}
-      {% endif %}
-  {% endif %}
+    {% if not 'xyz' in printer.toolhead.homed_axes %}
+        # If not fully homed, check if X and Y are homed
+        {% if not ('x' in printer.toolhead.homed_axes and 'y' in printer.toolhead.homed_axes) %}
+            # If X or Y not homed, do full homing
+            G28
+        {% else %}
+            # If only X and Y are homed, check if Z is homed
+            {% if not 'z' in printer.toolhead.homed_axes %}
+                # If Z is not homed, home Z
+                G28 Z
+            {% endif %}
+        {% endif %}
+    {% endif %}
                 
-  G90                                                             # Use absolute/relative coordinates
-  M400                                                            # Wait for current moves to finish
-  CLEAR_PAUSE                                                     # Clear any existing pause state
+    G90                                                             # Use absolute/relative coordinates
+    M400                                                            # Wait for current moves to finish
+    CLEAR_PAUSE                                                     # Clear any existing pause state
 
-  # Uncomment for bed mesh (1 of 2)
-  BED_MESH_CLEAR                                                  # Clears old saved bed mesh (if any)
+    # Uncomment for bed mesh (1 of 2)
+    BED_MESH_CLEAR                                                  # Clears old saved bed mesh (if any)
 
-  # Checks if the bed temp is higher than 90C - if so, then trigger a heat soak.
-  {% if params.BED|int > 90 %}
-    M117 Bed: {target_bed}C                                      # Display bed temperature
-    #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
-    M106 S255                                                    # Turns on the PT-fan
-    # Uncomment if you have a Nevermore.
-    SET_PIN PIN=nevermore VALUE=1                                # Turns on the Nevermore
-    G1 X{x_wait} Y{y_wait} Z15 F9000                            # Go to the center of the bed
-    M190 S{target_bed}                                          # Sets the target temp for the bed
-    M117 Heatsoak: {target_chamber}C                            # Display heatsoak info
-    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for the chamber to reach the desired temp
+    # Checks if the bed temp is higher than 90C - if so, then trigger a heat soak.
+    {% if params.BED|int > 90 %}
+      M117 Bed: {target_bed}C                                      # Display bed temperature
+      #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
+      M106 S255                                                    # Turns on the PT-fan
+      # Uncomment if you have a Nevermore.
+      SET_PIN PIN=nevermore VALUE=1                                # Turns on the Nevermore
+      G1 X{x_wait} Y{y_wait} Z15 F9000                            # Go to the center of the bed
+      M190 S{target_bed}                                          # Sets the target temp for the bed
+      M117 Heatsoak: {target_chamber}C                            # Display heatsoak info
+      # Conditional check for chamber thermistor
+      {% if printer["temperature_sensor chamber"] is defined %}
+        TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for the chamber to reach the desired temp
+      {% else %}
+        G4 P900000                                                  # Wait 15 minutes for heatsoak
+      {% endif %}
 
-  # If the bed temp is not over 90c, then handle soak based on material
-  {% else %}
-    M117 Bed: {target_bed}C                                     # Display bed temperature
-    #STATUS_HEATING                                              # Sets SB-leds to heating-mode
-    G1 X{x_wait} Y{y_wait} Z15 F9000                            # Go to center of the bed
-    M190 S{target_bed}                                          # Sets the target temp for the bed
-    
-    # Material-based soak times with variant handling
-    {% set raw_material = params.MATERIAL|default("PLA")|string|upper %}
-    
-    # Extract base material type by handling variants
-    {% set material = namespace(type="") %}
-    {% if "PLA" in raw_material %}
-        {% set material.type = "PLA" %}
-    {% elif "PETG" in raw_material %}
-        {% set material.type = "PETG" %}
-    {% elif "TPU" in raw_material or "TPE" in raw_material %}
-        {% set material.type = "TPU" %}
-    {% elif "PVA" in raw_material %}
-        {% set material.type = "PVA" %}
-    {% elif "HIPS" in raw_material %}
-        {% set material.type = "HIPS" %}
+    # If the bed temp is not over 90c, then handle soak based on material
     {% else %}
-        {% set material.type = raw_material %}
+      M117 Bed: {target_bed}C                                     # Display bed temperature
+      #STATUS_HEATING                                              # Sets SB-leds to heating-mode
+      G1 X{x_wait} Y{y_wait} Z15 F9000                            # Go to center of the bed
+      M190 S{target_bed}                                          # Sets the target temp for the bed
+      
+      # Material-based soak times with variant handling
+      {% set raw_material = params.MATERIAL|default("PLA")|string|upper %}
+      
+      # Extract base material type by handling variants
+      {% set material = namespace(type="") %}
+      {% if "PLA" in raw_material %}
+          {% set material.type = "PLA" %}
+      {% elif "PETG" in raw_material %}
+          {% set material.type = "PETG" %}
+      {% elif "TPU" in raw_material or "TPE" in raw_material %}
+          {% set material.type = "TPU" %}
+      {% elif "PVA" in raw_material %}
+          {% set material.type = "PVA" %}
+      {% elif "HIPS" in raw_material %}
+          {% set material.type = "HIPS" %}
+      {% else %}
+          {% set material.type = raw_material %}
+      {% endif %}
+
+      # Define soak times
+      {% set soak_time = {
+          "PLA": 180000,    # 3 minutes - Standard PLA soak time
+          "PETG": 240000,   # 4 minutes - PETG needs slightly longer to stabilize
+          "TPU": 180000,    # 3 minutes - TPU/TPE materials
+          "PVA": 180000,    # 3 minutes - Support material, similar to PLA
+          "HIPS": 240000    # 4 minutes - When used as support/primary under 90C
+      }[material.type]|default(300000) %}    # Default to 5 minutes if material not found
+      
+      M117 Soak: {soak_time/60000|int}min ({raw_material})        # Display soak time and material
+      G4 P{soak_time}                                             # Execute soak timer
     {% endif %}
 
-    # Define soak times
-    {% set soak_time = {
-        "PLA": 180000,    # 3 minutes - Standard PLA soak time
-        "PETG": 240000,   # 4 minutes - PETG needs slightly longer to stabilize
-        "TPU": 180000,    # 3 minutes - TPU/TPE materials
-        "PVA": 180000,    # 3 minutes - Support material, similar to PLA
-        "HIPS": 240000    # 4 minutes - When used as support/primary under 90C
-    }[material.type]|default(300000) %}    # Default to 5 minutes if material not found
-    
-    M117 Soak: {soak_time/60000|int}min ({raw_material})        # Display soak time and material
-    G4 P{soak_time}                                             # Execute soak timer
-  {% endif %}
+    # Comment out for Trident (Z_TILT_ADJUST)
+    # {% if 'z_tilt' in printer and not printer.z_tilt.applied %}
+    #   #STATUS_LEVELING                                            # Sets SB-LEDs to leveling-mode
+    #   M117 Z-tilt adjust                                         # Display Z-tilt adjustment
+    #   Z_TILT_ADJUST                                              # Levels the buildplate via z_tilt_adjust
+    #   G28 Z                                                      # Homes Z again after z_tilt_adjust
+    # {% endif %}
 
-  #   # Comment out for Trident (Z_TILT_ADJUST)
-  # {% if 'z_tilt' in printer and not printer.z_tilt.applied %}
-  #   #STATUS_LEVELING                                            # Sets SB-LEDs to leveling-mode
-  #   M117 Z-tilt adjust                                         # Display Z-tilt adjustment
-  #   Z_TILT_ADJUST                                              # Levels the buildplate via z_tilt_adjust
-  #   G28 Z                                                      # Homes Z again after z_tilt_adjust
-  # {% endif %}
+    # Uncomment for V2 (Quad gantry level AKA QGL)
+    #{% if printer.quad_gantry_level.applied == False %}
+    #  #STATUS_LEVELING                                             # Sets SB-LEDs to leveling-mode
+    #  M117 QGL                                                    # Display QGL status
+    #  QUAD_GANTRY_LEVEL                                           # Levels the gantry
+    #  #STATUS_HOMING                                               # Sets SB-LEDs to homing-mode
+    #  G28 Z                                                       # Homes Z again after QGL
+    #{% endif %}
 
-  # Uncomment for V2 (Quad gantry level AKA QGL)
-  #{% if printer.quad_gantry_level.applied == False %}
-  #  #STATUS_LEVELING                                             # Sets SB-LEDs to leveling-mode
-  #  M117 QGL                                                    # Display QGL status
-  #  QUAD_GANTRY_LEVEL                                           # Levels the gantry
-  #  #STATUS_HOMING                                               # Sets SB-LEDs to homing-mode
-  #  G28 Z                                                       # Homes Z again after QGL
-  #{% endif %}
+    # Heating the nozzle to 150C. This helps with getting a correct Z-home
+    #STATUS_HEATING                                                # Sets SB-LEDs to heating-mode
+    M117 Hotend: 150C                                             # Display hotend temperature
+    M109 S150                                                     # Heats the nozzle to 150C
 
-  # Heating the nozzle to 150C. This helps with getting a correct Z-home
-  #STATUS_HEATING                                                # Sets SB-LEDs to heating-mode
-  M117 Hotend: 150C                                             # Display hotend temperature
-  M109 S150                                                     # Heats the nozzle to 150C
+    #STATUS_CLEANING                                               # Sets SB-LEDs to cleaning-mode
+    CLEAN_NOZZLE EXTRUDER={target_extruder}                      # Clean nozzle before printing
 
-  #STATUS_CLEANING                                               # Sets SB-LEDs to cleaning-mode
-  CLEAN_NOZZLE EXTRUDER={target_extruder}                      # Clean nozzle before printing
+    #STATUS_COOLING                                                # Sets SB-LEDs to cooling-mode
+    #M109 S150                                                     # Heats the nozzle to 150C
 
-  #STATUS_COOLING                                                # Sets SB-LEDs to cooling-mode
-  #M109 S150                                                     # Heats the nozzle to 150C
+    #M117 Tappy Tap                                               # Display tappy tap message
+    #PROBE_EDDY_NG_TAP                                             # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
 
-  #M117 Tappy Tap                                               # Display tappy tap message
-  #PROBE_EDDY_NG_TAP                                             # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
+    SMART_PARK                                                    # Parks the toolhead neat the beginning of the print
 
-  SMART_PARK                                                    # Parks the toolhead neat the beginning of the print
+    # Uncomment for bed mesh (2 of 2)
+    #STATUS_MESHING                                               # Sets SB-LEDs to bed mesh-mode
+    M117 Bed mesh                                                # Display bed mesh status
+    BED_MESH_CALIBRATE ADAPTIVE=1                                # Starts bed mesh
 
-  # Uncomment for bed mesh (2 of 2)
-  #STATUS_MESHING                                               # Sets SB-LEDs to bed mesh-mode
-  M117 Bed mesh                                                # Display bed mesh status
-  BED_MESH_CALIBRATE ADAPTIVE=1                                # Starts bed mesh
+    M400                                                         # Wait for current moves to finish
 
-  M400                                                         # Wait for current moves to finish
+    SMART_PARK                                                   # KAMP smart park
 
-  SMART_PARK                                                   # KAMP smart park
-
-  # Heats up the nozzle to target via data from the slicer
-  M117 Hotend: {target_extruder}C                             # Display target hotend temperature
-  #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
-  M107                                                        # Turns off part cooling fan
-  M109 S{target_extruder}                                     # Heats the nozzle to printing temp
-  
-  # Gets ready to print by doing a purge line and updating the SB-LEDs
-  M117 The purge...                                           # Display purge status
-  #STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
-  LINE_PURGE                                                  # KAMP line purge
-
-  M117 Printer goes brrr                                      # Display print starting
-  
-  #STATUS_PRINTING                                             # Sets SB-LEDs to printing-mode
-```
-</details>
-
-<details>
-<summary>Without a Chamber thermistor (15 min soak)</summary>
-  
-```
-#####################################################################
-#   A better start_print macro
-#####################################################################
-
-[gcode_macro START_PRINT]
-gcode:
-  # This part fetches data from your slicer, such as bed temp, extruder temp, and the size of your printer.
-  {% set target_bed = params.BED|int %}
-  {% set target_extruder = params.EXTRUDER|int %}
-  {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
-  {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
-
-  # Homes the printer, sets absolute positioning, and updates the Stealthburner LEDs.
-  #STATUS_HOMING                                                    # Sets SB-LEDs to homing-mode
-
-  {% if not 'xyz' in printer.toolhead.homed_axes %}
-      # If not fully homed, check if X and Y are homed
-      {% if not ('x' in printer.toolhead.homed_axes and 'y' in printer.toolhead.homed_axes) %}
-          # If X or Y not homed, do full homing
-          G28
-      {% else %}
-          # If only X and Y are homed, check if Z is homed
-          {% if not 'z' in printer.toolhead.homed_axes %}
-              # If Z is not homed, home Z
-              G28 Z
-          {% endif %}
-      {% endif %}
-  {% endif %}
-                
-  G90                                                             # Use absolute/relative coordinates
-  M400                                                            # Wait for current moves to finish
-  CLEAR_PAUSE                                                     # Clear any existing pause state
-
-  # Uncomment for bed mesh (1 of 2)
-  BED_MESH_CLEAR                                                  # Clears old saved bed mesh (if any)
-
-  # Checks if the bed temp is higher than 90C - if so, then trigger a fixed 15-minute heatsoak
-  {% if params.BED|int > 90 %}
-    M117 Bed: {target_bed}C                                      # Display bed temperature
+    # Heats up the nozzle to target via data from the slicer
+    M117 Hotend: {target_extruder}C                             # Display target hotend temperature
     #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
-    M106 S255                                                    # Turns on the PT-fan at full speed for high temp
-    # Uncomment if you have a Nevermore.
-    #SET_PIN PIN=nevermore VALUE=1                               # Turns on the Nevermore
-    G1 X{x_wait} Y{y_wait} Z15 F9000                            # Go to the center of the bed
-    M190 S{target_bed}                                          # Sets the target temp for the bed
-    M117 High Temp Heatsoak: 15min                              # Display heatsoak info
-    G4 P900000                                                  # Wait 15 minutes for heatsoak
-
-  # If the bed temp is not over 90c, then handle soak based on material
-  {% else %}
-    M117 Bed: {target_bed}C                                     # Display bed temperature
-    #STATUS_HEATING                                              # Sets SB-leds to heating-mode
-    M106 S150                                                    # Turns on the PT-fan at lower speed for low temp
-    G1 X{x_wait} Y{y_wait} Z15 F9000                            # Go to center of the bed
-    M190 S{target_bed}                                          # Sets the target temp for the bed
+    M107                                                        # Turns off part cooling fan
+    M109 S{target_extruder}                                     # Heats the nozzle to printing temp
     
-    # Material-based soak times with variant handling
-    {% set raw_material = params.MATERIAL|default("PLA")|string|upper %}
+    # Gets ready to print by doing a purge line and updating the SB-LEDs
+    M117 The purge...                                           # Display purge status
+    #STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
+    LINE_PURGE                                                  # KAMP line purge
+
+    M117 Printer goes brrr                                      # Display print starting
     
-    # Extract base material type by handling variants
-    {% set material = namespace(type="") %}
-    {% if "PLA" in raw_material %}
-        {% set material.type = "PLA" %}
-    {% elif "PETG" in raw_material %}
-        {% set material.type = "PETG" %}
-    {% elif "TPU" in raw_material or "TPE" in raw_material %}
-        {% set material.type = "TPU" %}
-    {% elif "PVA" in raw_material %}
-        {% set material.type = "PVA" %}
-    {% elif "HIPS" in raw_material %}
-        {% set material.type = "HIPS" %}
-    {% else %}
-        {% set material.type = raw_material %}
-    {% endif %}
-
-    # Define soak times
-    {% set soak_time = {
-        "PLA": 180000,    # 3 minutes - Standard PLA soak time
-        "PETG": 240000,   # 4 minutes - PETG needs slightly longer to stabilize
-        "TPU": 180000,    # 3 minutes - TPU/TPE materials
-        "PVA": 180000,    # 3 minutes - Support material, similar to PLA
-        "HIPS": 240000    # 4 minutes - When used as support/primary under 90C
-    }[material.type]|default(300000) %}    # Default to 5 minutes if material not found
-    
-    M117 Soak: {soak_time/60000|int}min ({raw_material})        # Display soak time and material
-    G4 P{soak_time}                                             # Execute soak timer
-  {% endif %}
-
-  # Comment out for Trident (Z_TILT_ADJUST)
-  #{% if 'z_tilt' in printer and not printer.z_tilt.applied %}
-  #  STATUS_LEVELING                                            # Sets SB-LEDs to leveling-mode
-  #  M117 Z-tilt adjust                                        # Display Z-tilt adjustment
-  #  Z_TILT_ADJUST                                              # Levels the buildplate via z_tilt_adjust
-  #  G28 Z                                                      # Homes Z again after z_tilt_adjust
-  #{% endif %}
-
-  # Comment out for V2 (Quad gantry level AKA QGL)
-  #{% if printer.quad_gantry_level.applied == False %}
-  #  STATUS_LEVELING                                             # Sets SB-LEDs to leveling-mode
-  #  M117 QGL                                                    # Display QGL status
-  #  QUAD_GANTRY_LEVEL                                           # Levels the gantry
-  #  STATUS_HOMING                                               # Sets SB-LEDs to homing-mode
-  #  G28 Z                                                       # Homes Z again after QGL
-  #{% endif %}
-
-  # Heating the nozzle to 150C. This helps with getting a correct Z-home
-  #STATUS_HEATING                                                # Sets SB-LEDs to heating-mode
-  M117 Hotend: 150C                                             # Display hotend temperature
-  M109 S150                                                     # Heats the nozzle to 150C
-
-  #STATUS_CLEANING                                               # Sets SB-LEDs to cleaning-mode
-  CLEAN_NOZZLE EXTRUDER={target_extruder}                      # Clean nozzle before printing
-
-  #STATUS_COOLING                                                # Sets SB-LEDs to cooling-mode
-  #M109 S150                                                     # Heats the nozzle to 150C
-
-  #M117 Tappy Tap                                               # Display tappy tap message
-  #PROBE_EDDY_NG_TAP                                             # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
-
-  SMART_PARK                                                    # Parks the toolhead near the beginning of the print
-
-  # Uncomment for bed mesh (2 of 2)
-  #STATUS_MESHING                                               # Sets SB-LEDs to bed mesh-mode
-  M117 Bed mesh                                                # Display bed mesh status
-  BED_MESH_CALIBRATE ADAPTIVE=1                                # Starts bed mesh
-
-  M400                                                         # Wait for current moves to finish
-
-  SMART_PARK                                                   # KAMP smart park
-
-  # Heats up the nozzle to target via data from the slicer
-  M117 Hotend: {target_extruder}C                             # Display target hotend temperature
-  #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
-  M107                                                        # Turns off part cooling fan
-  M109 S{target_extruder}                                     # Heats the nozzle to printing temp
-  
-  # Gets ready to print by doing a purge line and updating the SB-LEDs
-  M117 Printer goes brrr                                      # Display print starting
-  #STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
-  LINE_PURGE                                                  # KAMP line purge
-  
-  #STATUS_PRINTING                                             # Sets SB-LEDs to printing-mode
+    #STATUS_PRINTING                                             # Sets SB-LEDs to printing-mode
 ```
 </details>
 
 ## Changelog
 
 01-11-2025: Initial creation 
+
 02-01-2025: WTFBBQAUCE I forgot to put all of the changes down. It's been a lot of formatting, additions, ect. 
+
+02-13-2025: Combined the start print macro to no longer require individual macros. (Got a nevermore? Awesome! Don't? Thats ok for heating purposes)
 
 ## Interested in more macros?
 
