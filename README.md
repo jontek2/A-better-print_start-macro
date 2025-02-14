@@ -111,19 +111,11 @@ gcode:
 
     # Homes the printer, sets absolute positioning, and updates the Stealthburner LEDs.
     #STATUS_HOMING
-
-    {% if not 'xyz' in printer.toolhead.homed_axes %}
-        # If not fully homed, check if X and Y are homed
-        {% if not ('x' in printer.toolhead.homed_axes and 'y' in printer.toolhead.homed_axes) %}
-            # If X or Y not homed, do full homing
-            G28
-        {% else %}
-            # If only X and Y are homed, check if Z is homed
-            {% if not 'z' in printer.toolhead.homed_axes %}
-                # If Z is not homed, home Z
-                G28 Z
-            {% endif %}
-        {% endif %}
+    # Check homing status and home if needed
+    {% if "xyz" not in printer.toolhead.homed_axes %}
+        G28                             # Full home if not already homed
+    {% elif 'z' not in printer.toolhead.homed_axes %}
+        G28 Z                          # Home Z if only Z is unhomed
     {% endif %}
                 
     G90                                                             # Use absolute/relative coordinates
