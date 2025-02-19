@@ -8,15 +8,11 @@
 
 ## :warning: Required changes to your printer system :warning:
 
-[KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) IS ALSO APPLIED IN THIS MACRO. [Other methods can be used too](https://www.printables.com/model/1035759-adaptive-purge-for-any-3d-printer-using-slicer-var)
-
-YOU MUST INSTALL KAMP AND ENABLE SMART PARKING AND LINE PURGE
+<B> [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) IS APPLIED IN THIS MACRO. YOU MUST INSTALL KAMP TO ENABLE SMART PARKING AND LINE PURGE. 
 
 There are STATUS_ macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect)
 
-<h4>This start_print macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print.</h4>
-
-<p>I have included an additional START_PRINT macro that does not call for the chamber thermistor if you do not have one. If you do not have a chamber thermistor, the alt macro has a predefined 15min heat soak timer to ensure the chamber is to temp.</p>
+This start_print macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print. </B>
 
 ## :warning: REQUIRED changes in your slicer :warning:
 You need to replace your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
