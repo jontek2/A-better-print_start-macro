@@ -2,7 +2,7 @@
 #####################################################################
 # START_PRINT/PRINT_START Macro Installation Script for Klipper
 # Author: ss1gohan13
-# Created: 2025-02-18 23:37:17 UTC
+# Created: 2025-02-19 00:40:32 UTC
 # Repository: https://github.com/ss1gohan13/A-better-print_start-macro-SV08
 #####################################################################
 
@@ -23,9 +23,6 @@ BACKUP_SUFFIX=".backup-$(date +%Y%m%d_%H%M%S)"
 START_PRINT_CONTENT=$(cat << 'EOL'
 #####################################################################
 #------------------- A better start_print macro --------------------#
-# Created by: ss1gohan13
-# Created on: 2025-02-18 23:37:17 UTC
-# Version: 1.0.0
 #####################################################################
 
 [gcode_macro START_PRINT]
@@ -72,7 +69,7 @@ gcode:
             G4 P900000                                             # Wait 15 minutes for heatsoak
         {% endif %}
 
-    # If the bed temp is not over 90c, then handle soak based on material
+# If the bed temp is not over 90c, then handle soak based on material
     {% else %}
         M117 Bed: {target_bed}C                                    # Display bed temperature
         #STATUS_HEATING                                            # Sets SB-leds to heating-mode
@@ -144,7 +141,6 @@ gcode:
     #PROBE_EDDY_NG_TAP                                          # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
 
     SMART_PARK                                                  # Parks the toolhead near the beginning of the print
-
     # Uncomment for bed mesh (2 of 2)
     #STATUS_MESHING                                             # Sets SB-LEDs to bed mesh-mode
     M117 Bed mesh                                              # Display bed mesh status
@@ -186,6 +182,27 @@ print_color() {
     esac
 }
 
+# Function to restart Klipper
+restart_klipper() {
+    print_color "info" "Attempting to restart Klipper..."
+    
+    # First try Moonraker API (firmware restart)
+    if curl -s "http://localhost:7125/printer/firmware_restart" -H "Content-Type: application/json" -X POST; then
+        print_color "success" "Klipper firmware restart initiated successfully"
+        return 0
+    else
+        # If Moonraker fails, try system service restart
+        print_color "warning" "Moonraker API restart failed, attempting service restart..."
+        if sudo systemctl restart klipper; then
+            print_color "success" "Klipper service restarted successfully"
+            return 0
+        else
+            print_color "error" "Failed to restart Klipper. Please restart manually"
+            return 1
+        fi
+    fi
+}
+
 # Function to check if START_PRINT or PRINT_START macro exists in file
 check_existing_macro() {
     local file="$1"
@@ -194,7 +211,6 @@ check_existing_macro() {
     fi
     return 1  # Neither macro found
 }
-
 # Function to find all potential macro files in printer.cfg
 find_printer_includes() {
     local config_path="$1"
@@ -314,4 +330,26 @@ install_macro() {
 
     echo "$START_PRINT_CONTENT" >> "$macro_path"
     
-    print_color "success" "START_PRINT and PRINT_START macros have been installed successfully in $macro_file
+    print_color "success" "START_PRINT and PRINT_START macros have been installed successfully in $macro_file!"
+    
+    # Ask user if they want to restart Klipper
+    echo -n "Would you like to restart Klipper now to apply changes? (y/N): "
+    read -r restart_response
+    if [[ "$restart_response" =~ ^[Yy]$ ]]; then
+        restart_klipper
+    else
+        print_color "info" "Please remember to restart Klipper to apply changes"
+    fi
+    
+    return 0
+}
+
+# Main script execution
+print_color "info" "Starting installation of START_PRINT macro..."
+
+# Allow custom config path
+if [ $# -eq 1 ]; then
+    install_macro "$1"
+else
+    install_macro
+fi
