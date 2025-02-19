@@ -2,24 +2,16 @@
 #####################################################################
 # START_PRINT/PRINT_START Macro Installation Script for Klipper
 # Author: ss1gohan13
-# Created: 2025-02-19 00:40:32 UTC
+# Created: 2025-02-19 05:28:54 UTC
 # Repository: https://github.com/ss1gohan13/A-better-print_start-macro-SV08
 #####################################################################
 
-# Default path for Klipper config (can be overridden)
+# Default path for Klipper config
 DEFAULT_CONFIG_PATH="$HOME/printer_data/config"
-# Common macro file names
-MACRO_FILES=(
-    "macros.cfg"
-    "printer_macros.cfg"
-    "start_print_macro.cfg"
-    "custom_macros.cfg"
-    "print_start_macros.cfg"
-    "print_macros.cfg"
-    "sovol-macros.cfg"
-)
+MACRO_FILE="macros.cfg"
 BACKUP_SUFFIX=".backup-$(date +%Y%m%d_%H%M%S)"
 
+# START_PRINT macro content
 START_PRINT_CONTENT=$(cat << 'EOL'
 #####################################################################
 #------------------- A better start_print macro --------------------#
@@ -203,136 +195,65 @@ restart_klipper() {
     fi
 }
 
-# Function to check if START_PRINT or PRINT_START macro exists in file
-check_existing_macro() {
-    local file="$1"
-    if grep -q "\[gcode_macro START_PRINT\]" "$file" 2>/dev/null || grep -q "\[gcode_macro PRINT_START\]" "$file" 2>/dev/null; then
-        return 0  # Found either macro
-    fi
-    return 1  # Neither macro found
-}
-# Function to find all potential macro files in printer.cfg
-find_printer_includes() {
-    local config_path="$1"
-    local printer_cfg="$config_path/printer.cfg"
-    
-    if [ -f "$printer_cfg" ]; then
-        grep -i "^\[include\s\+" "$printer_cfg" | sed 's/\[include\s\+\(.*\)\]/\1/' | tr -d ' '
-    fi
-}
-
-# Function to find the appropriate macro file
-find_macro_file() {
-    local config_path="$1"
-    local selected_file=""
-    local found_files=()
-    local includes
-    
-    print_color "info" "Checking printer.cfg for included macro files..."
-    includes=$(find_printer_includes "$config_path")
-    
-    for include in $includes; do
-        if [ -f "$config_path/$include" ] && grep -q "gcode_macro" "$config_path/$include" 2>/dev/null; then
-            found_files+=("$include")
-        fi
-    done
-    
-    for macro_file in "${MACRO_FILES[@]}"; do
-        if [ -f "$config_path/$macro_file" ]; then
-            found_files+=("$macro_file")
-        fi
-    done
-    
-    if [ ${#found_files[@]} -gt 0 ]; then
-        print_color "info" "Found the following potential macro files:"
-        for i in "${!found_files[@]}"; do
-            echo "[$((i+1))] ${found_files[$i]}"
-        done
-        
-        if [ ${#found_files[@]} -gt 1 ]; then
-            while true; do
-                echo "Please select a file number (1-${#found_files[@]}) or enter a new filename:"
-                read -r selection
-                
-                if [[ "$selection" =~ ^[0-9]+$ ]] && [ "$selection" -ge 1 ] && [ "$selection" -le "${#found_files[@]}" ]; then
-                    selected_file="${found_files[$((selection-1))]}"
-                    break
-                elif [[ "$selection" == *.cfg ]]; then
-                    selected_file="$selection"
-                    break
-                else
-                    print_color "error" "Invalid selection. Please try again."
-                fi
-            done
-        else
-            selected_file="${found_files[0]}"
-        fi
-    else
-        print_color "warning" "No existing macro files found."
-        echo "Please enter a name for the new macro file (default: macros.cfg):"
-        read -r new_file
-        selected_file="${new_file:-macros.cfg}"
-    fi
-    
-    echo "$selected_file"
-}
-
-# Function to check if file is included in printer.cfg
-check_and_add_include() {
-    local config_path="$1"
-    local macro_file="$2"
-    local printer_cfg="$config_path/printer.cfg"
-    
-    if [ -f "$printer_cfg" ]; then
-        if ! grep -q "^\[include $macro_file\]" "$printer_cfg"; then
-            print_color "info" "Adding include statement for $macro_file to printer.cfg"
-            echo -e "\n[include $macro_file]" >> "$printer_cfg"
-        fi
-    else
-        print_color "warning" "printer.cfg not found. Please manually include $macro_file in your configuration."
-    fi
-}
-
 # Main installation function
 install_macro() {
     local config_path="${1:-$DEFAULT_CONFIG_PATH}"
+    local macro_path="$config_path/$MACRO_FILE"
+    
+    print_color "info" "Starting installation of START_PRINT macro..."
+    print_color "info" "Using macro file: $MACRO_FILE"
     
     if [ ! -d "$config_path" ]; then
         print_color "error" "Config directory not found: $config_path"
         return 1
     fi
 
-    local macro_file=$(find_macro_file "$config_path")
-    local macro_path="$config_path/$macro_file"
-    
-    print_color "info" "Selected macro file: $macro_file"
-
+    # Create new file if it doesn't exist
     if [ ! -f "$macro_path" ]; then
-        print_color "info" "Creating new file: $macro_file"
-        touch "$macro_path"
-        check_and_add_include "$config_path" "$macro_file"
+        print_color "info" "Creating new file: $MACRO_FILE"
+        touch "$macro_path" || {
+            print_color "error" "Failed to create file: $macro_path"
+            return 1
+        }
+        
+        # Add include to printer.cfg if it doesn't exist
+        if [ -f "$config_path/printer.cfg" ]; then
+            if ! grep -q "^\[include $MACRO_FILE\]" "$config_path/printer.cfg"; then
+                print_color "info" "Adding include statement to printer.cfg"
+                echo -e "\n[include $MACRO_FILE]" >> "$config_path/printer.cfg"
+            fi
+        fi
     fi
 
+    # Check write permissions
     if [ ! -w "$macro_path" ]; then
         print_color "error" "Cannot write to $macro_path. Check permissions."
         return 1
-    fi
+    }
 
-    cp "$macro_path" "$macro_path$BACKUP_SUFFIX"
-    print_color "info" "Backup created: $macro_path$BACKUP_SUFFIX"
+    # Create backup
+    cp "$macro_path" "$macro_path$BACKUP_SUFFIX" || {
+        print_color "error" "Failed to create backup file"
+        return 1
+    }
+    print_color "success" "Backup created: $macro_path$BACKUP_SUFFIX"
 
-    if check_existing_macro "$macro_path"; then
-        print_color "warning" "Existing START_PRINT or PRINT_START macro found. Both will be replaced."
-        # Remove both variations if they exist
+    # Remove existing macros if present
+    if grep -q "\[gcode_macro START_PRINT\]\|\[gcode_macro PRINT_START\]" "$macro_path" 2>/dev/null; then
+        print_color "info" "Removing existing START_PRINT/PRINT_START macros"
         sed -i '/\[gcode_macro START_PRINT\]/,/^[[:space:]]*$/d' "$macro_path"
         sed -i '/\[gcode_macro PRINT_START\]/,/^[[:space:]]*$/d' "$macro_path"
     fi
 
-    echo "$START_PRINT_CONTENT" >> "$macro_path"
+    # Add new macro
+    echo "$START_PRINT_CONTENT" >> "$macro_path" || {
+        print_color "error" "Failed to write new macro content"
+        return 1
+    }
     
-    print_color "success" "START_PRINT and PRINT_START macros have been installed successfully in $macro_file!"
+    print_color "success" "START_PRINT and PRINT_START macros have been installed successfully!"
     
-    # Ask user if they want to restart Klipper
+    # Ask about Klipper restart
     echo -n "Would you like to restart Klipper now to apply changes? (y/N): "
     read -r restart_response
     if [[ "$restart_response" =~ ^[Yy]$ ]]; then
@@ -344,12 +265,5 @@ install_macro() {
     return 0
 }
 
-# Main script execution
-print_color "info" "Starting installation of START_PRINT macro..."
-
-# Allow custom config path
-if [ $# -eq 1 ]; then
-    install_macro "$1"
-else
-    install_macro
-fi
+# Execute installation
+install_macro
