@@ -2,7 +2,7 @@
 #####################################################################
 # START_PRINT/PRINT_START Macro Installation Script for Klipper
 # Author: ss1gohan13
-# Created: 2025-02-19 05:34:53 UTC
+# Created: 2025-02-19 05:39:12 UTC
 # Repository: https://github.com/ss1gohan13/A-better-print_start-macro-SV08
 #####################################################################
 
@@ -54,9 +54,14 @@ main() {
     print_color "info" "Creating backup..."
     cp "$macro_path" "$macro_path$BACKUP_SUFFIX"
     
-    # Install macro
-    print_color "info" "Installing START_PRINT macro..."
-    cat > "$macro_path" << 'EOL'
+    # Remove existing START_PRINT and PRINT_START macros if they exist
+    print_color "info" "Updating START_PRINT macro..."
+    sed -i '/\[gcode_macro START_PRINT\]/,/^[[:space:]]*$/d' "$macro_path"
+    sed -i '/\[gcode_macro PRINT_START\]/,/^[[:space:]]*$/d' "$macro_path"
+    
+    # Append new START_PRINT macro
+    cat >> "$macro_path" << 'EOL'
+
 #####################################################################
 #------------------- A better start_print macro --------------------#
 #####################################################################
@@ -177,7 +182,6 @@ gcode:
     #PROBE_EDDY_NG_TAP                                          # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
 
     SMART_PARK                                                  # Parks the toolhead near the beginning of the print
-
     # Uncomment for bed mesh (2 of 2)
     #STATUS_MESHING                                             # Sets SB-LEDs to bed mesh-mode
     M117 Bed mesh                                              # Display bed mesh status
@@ -215,7 +219,7 @@ EOL
         fi
     fi
     
-    print_color "success" "Installation complete!"
+    print_color "success" "START_PRINT macro has been updated!"
     print_color "info" "Would you like to restart Klipper? (y/N)"
     read -r response
     if [[ "$response" =~ ^[Yy]$ ]]; then
