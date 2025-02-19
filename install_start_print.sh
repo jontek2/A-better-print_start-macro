@@ -8,7 +8,7 @@
 
 # Configuration
 DEFAULT_CONFIG_PATH="$HOME/printer_data/config"
-BACKUP_DIR="$DEFAULT_CONFIG_PATH/macro_backups"
+BACKUP_DIR="$DEFAULT_CONFIG_PATH/backup"
 MACRO_FILE="macros.cfg"
 BACKUP_SUFFIX=".backup-$(date +%Y%m%d_%H%M%S)"
 
