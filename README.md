@@ -226,6 +226,7 @@ gcode:
     #STATUS_COOLING                                              # Sets SB-LEDs to cooling-mode
     #M109 S150                                                   # Heats the nozzle to 150C
 
+    #STATUS_CALIBRATING_Z                                       # Sets SB-LEDs to z-calibration-mode
     #M117 Tappy Tap                                             # Display tappy tap message
     #PROBE_EDDY_NG_TAP                                          # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
 
