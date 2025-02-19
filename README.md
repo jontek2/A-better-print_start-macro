@@ -18,7 +18,7 @@ There are STATUS_ macros built into the start print sequence. These have all bee
 
 <p>I have included an additional START_PRINT macro that does not call for the chamber thermistor if you do not have one. If you do not have a chamber thermistor, the alt macro has a predefined 15min heat soak timer to ensure the chamber is to temp.</p>
 
-## :warning: Required changes in your slicer :warning:
+## :warning: REQUIRED changes in your slicer :warning:
 You need to replace your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
 
 <details>
@@ -64,7 +64,7 @@ start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temp
 
 ## :warning: OPTIONAL changes in your printer configuration :warning:
 
-The start_print macro has predefined names for nevermore and chamber thermistor. If you are adding a nevermore and/or a chamnber thermistor, make sure that yours are named correctly. In your printer.cfg file verify the following:
+The start_print macro has predefined, but commented out, names for nevermore and chamber thermistor. If you are adding a nevermore and/or a chamnber thermistor, make sure that yours are named correctly. In your printer.cfg file verify the following:
 
 **Chamber thermistor**:
 Make sure chamber thermistor is named "chamber" and update XXX.
@@ -87,21 +87,19 @@ shutdown_value: 0
 
 Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro) to turn the nevermore off.
 
+# START_PRINT Macro
+
 <details>
-<summary>Install Script</summary>
+<summary>Auto Install Script</summary>
 
 ```
 cd ~
 curl -sSL https://raw.githubusercontent.com/ss1gohan13/A-better-print_start-macro-SV08/main/install_start_print.sh | bash
 ```
+
 </details>
 
-# START_PRINT Macro
-
-> [!WARNING]  
-> The macro was updated recently (02-01-2025). If you run in to any issues then please let me know by opening a issue on github.
-
-Copy the macro and replace it with your old print_start/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and uncomment parts of this macro.
+Manual installation: Copy the macro and replace it with your old print_start/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and uncomment parts of this macro.
 
 <details>
 <summary>EXPAND THIS TO SEE THE START PRINT MACRO</summary>
@@ -256,7 +254,9 @@ gcode:
 
 ## Changelog
 
-02-28-2025: Initial installation script created
+02-19-2025: Corrected formatting, spelling, order of operations, and changelog
+
+02-18-2025: Initial installation script created
 
 01-11-2025: Initial creation 
 
