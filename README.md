@@ -92,7 +92,7 @@ Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your [End Print Macro](ht
 
 ```
 cd ~
-git clone https://github.com/ss1gohan13/SV08-Replacement-Macros.git
+git clone https://github.com/ss1gohan13/A-better-print_start-macro-SV08.git
 cd A-better-print_start-macro-SV08
 ./install_start_print.sh
 ```
