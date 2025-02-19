@@ -2,7 +2,7 @@
 #####################################################################
 # START_PRINT/PRINT_START Macro Installation Script for Klipper
 # Author: ss1gohan13
-# Created: 2025-02-19 06:04:28 UTC
+# Created: 2025-02-19 06:13:21 UTC
 # Repository: https://github.com/ss1gohan13/A-better-print_start-macro-SV08
 #####################################################################
 
@@ -34,9 +34,9 @@ create_backup_dir() {
     fi
 }
 
-# Improved restart Klipper function with better error handling
+# Improved restart Klipper function with automatic handling
 restart_klipper() {
-    print_color "info" "Attempting to restart Klipper..."
+    print_color "info" "Restarting Klipper..."
     
     # Try Moonraker API first
     local moonraker_response
@@ -46,50 +46,24 @@ restart_klipper() {
         print_color "success" "Klipper firmware restart initiated via Moonraker"
         return 0
     else
-        print_color "warning" "Moonraker API restart failed (HTTP: $moonraker_response), attempting service restart..."
+        print_color "warning" "Moonraker API restart failed, attempting service restart..."
         
-        # Check if systemctl is available and user has sudo access
+        # Check if systemctl is available and try service restart
         if command -v systemctl >/dev/null 2>&1; then
             if sudo -n systemctl restart klipper 2>/dev/null; then
                 print_color "success" "Klipper service restarted successfully"
                 return 0
             else
-                print_color "error" "Failed to restart Klipper service. Please run: sudo systemctl restart klipper"
+                print_color "error" "Failed to restart Klipper service automatically"
+                print_color "info" "Please run: sudo systemctl restart klipper"
                 return 1
             fi
         else
-            print_color "error" "System service manager not found. Please restart Klipper manually"
+            print_color "error" "System service manager not found"
+            print_color "info" "Please restart Klipper manually"
             return 1
         fi
     fi
-}
-
-# Handle restart prompt with improved input handling
-handle_restart_prompt() {
-    exec < /dev/tty > /dev/tty 2> /dev/tty || {
-        print_color "warning" "Not running interactively. To restart Klipper manually:"
-        print_color "info" "1. curl -s 'http://localhost:7125/printer/firmware_restart' -X POST"
-        print_color "info" "2. sudo systemctl restart klipper"
-        return
-    }
-    
-    while true; do
-        print_color "info" "Would you like to restart Klipper now? (y/N): "
-        read -r response
-        case $response in
-            [Yy]* )
-                restart_klipper
-                break
-                ;;
-            [Nn]* | "" )
-                print_color "info" "Remember to restart Klipper manually to apply changes"
-                break
-                ;;
-            * )
-                print_color "warning" "Please answer y or n"
-                ;;
-        esac
-    done
 }
 
 # Main installation function
@@ -294,9 +268,8 @@ EOL
     
     print_color "success" "START_PRINT macro has been updated!"
     
-    # Handle restart prompt with proper terminal redirection
-    print_color "info" "Processing restart request..."
-    handle_restart_prompt
+    # Automatically restart Klipper
+    restart_klipper
 }
 
 # Run the script
