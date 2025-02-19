@@ -2,7 +2,7 @@
 #####################################################################
 # START_PRINT/PRINT_START Macro Installation Script for Klipper
 # Author: ss1gohan13
-# Created: 2025-02-19 06:13:21 UTC
+# Created: 2025-02-19 06:16:31 UTC
 # Repository: https://github.com/ss1gohan13/A-better-print_start-macro-SV08
 #####################################################################
 
@@ -34,35 +34,23 @@ create_backup_dir() {
     fi
 }
 
-# Improved restart Klipper function with automatic handling
+# Restart Klipper function - simplified to only use systemctl
 restart_klipper() {
-    print_color "info" "Restarting Klipper..."
+    print_color "info" "Restarting Klipper service..."
     
-    # Try Moonraker API first
-    local moonraker_response
-    moonraker_response=$(curl -s -w "%{http_code}" "http://localhost:7125/printer/firmware_restart" -H "Content-Type: application/json" -X POST)
-    
-    if [ "$moonraker_response" = "200" ] || [ "$moonraker_response" = "204" ]; then
-        print_color "success" "Klipper firmware restart initiated via Moonraker"
-        return 0
-    else
-        print_color "warning" "Moonraker API restart failed, attempting service restart..."
-        
-        # Check if systemctl is available and try service restart
-        if command -v systemctl >/dev/null 2>&1; then
-            if sudo -n systemctl restart klipper 2>/dev/null; then
-                print_color "success" "Klipper service restarted successfully"
-                return 0
-            else
-                print_color "error" "Failed to restart Klipper service automatically"
-                print_color "info" "Please run: sudo systemctl restart klipper"
-                return 1
-            fi
+    if command -v systemctl >/dev/null 2>&1; then
+        if sudo -n systemctl restart klipper 2>/dev/null; then
+            print_color "success" "Klipper service restarted successfully"
+            return 0
         else
-            print_color "error" "System service manager not found"
-            print_color "info" "Please restart Klipper manually"
+            print_color "error" "Failed to restart Klipper service automatically"
+            print_color "info" "Please run: sudo systemctl restart klipper"
             return 1
         fi
+    else
+        print_color "error" "System service manager not found"
+        print_color "info" "Please restart Klipper manually"
+        return 1
     fi
 }
 
