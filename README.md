@@ -97,7 +97,7 @@ shutdown_value: 0
 
 ```
 cd ~
-curl -sSL https://raw.githubusercontent.com/ss1gohan13/A-better-print_start-macro-SV08/main/install_start_print.sh | bash
+curl -sSL https://raw.githubusercontent.com/ss1gohan13/A-better-print_start-macro-SV08/main/direct_install.sh | bash
 ```
 
 </details>
