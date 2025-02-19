@@ -247,6 +247,8 @@ gcode:
 
 ## Changelog
 
+02-28-2025: Initial installation script created
+
 01-11-2025: Initial creation 
 
 02-01-2025: WTFBBQAUCE I forgot to put all of the changes down. It's been a lot of formatting, additions, ect. 
