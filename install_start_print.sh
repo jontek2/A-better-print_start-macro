@@ -2,12 +2,13 @@
 #####################################################################
 # START_PRINT/PRINT_START Macro Installation Script for Klipper
 # Author: ss1gohan13
-# Created: 2025-02-19 05:39:12 UTC
+# Created: 2025-02-19 05:54:32 UTC
 # Repository: https://github.com/ss1gohan13/A-better-print_start-macro-SV08
 #####################################################################
 
 # Configuration
 DEFAULT_CONFIG_PATH="$HOME/printer_data/config"
+BACKUP_DIR="$DEFAULT_CONFIG_PATH/macro_backups"
 MACRO_FILE="macros.cfg"
 BACKUP_SUFFIX=".backup-$(date +%Y%m%d_%H%M%S)"
 
@@ -22,6 +23,66 @@ print_color() {
     esac
 }
 
+# Create backup directory if it doesn't exist
+create_backup_dir() {
+    if [ ! -d "$BACKUP_DIR" ]; then
+        print_color "info" "Creating backup directory: $BACKUP_DIR"
+        mkdir -p "$BACKUP_DIR" || {
+            print_color "error" "Failed to create backup directory"
+            exit 1
+        }
+    fi
+}
+
+# Restart Klipper function
+restart_klipper() {
+    print_color "info" "Attempting to restart Klipper..."
+    
+    # Try Moonraker API first
+    if curl -s "http://localhost:7125/printer/firmware_restart" -H "Content-Type: application/json" -X POST; then
+        print_color "success" "Klipper firmware restart initiated"
+        return 0
+    else
+        print_color "warning" "Moonraker API restart failed, attempting service restart..."
+        if sudo systemctl restart klipper; then
+            print_color "success" "Klipper service restarted"
+            return 0
+        else
+            print_color "error" "Failed to restart Klipper"
+            return 1
+        fi
+    fi
+}
+
+# Handle restart prompt
+handle_restart_prompt() {
+    # Make sure we're reading from an actual terminal
+    if [ -t 0 ]; then
+        while true; do
+            print_color "info" "Would you like to restart Klipper now? (y/N): "
+            read -r response < /dev/tty
+            case $response in
+                [Yy]* )
+                    restart_klipper
+                    break
+                    ;;
+                [Nn]* | "" )
+                    print_color "info" "Remember to restart Klipper manually to apply changes"
+                    break
+                    ;;
+                * )
+                    print_color "warning" "Please answer y or n"
+                    ;;
+            esac
+        done
+    else
+        # If not running interactively, provide instructions
+        print_color "info" "To restart Klipper, run one of these commands:"
+        print_color "info" "1. curl -s 'http://localhost:7125/printer/firmware_restart' -X POST"
+        print_color "info" "2. sudo systemctl restart klipper"
+    fi
+}
+
 # Main installation function
 main() {
     local config_path="$DEFAULT_CONFIG_PATH"
@@ -34,6 +95,9 @@ main() {
         print_color "error" "Config directory not found: $config_path"
         exit 1
     fi
+    
+    # Create backup directory
+    create_backup_dir
     
     # Create or verify macro file
     if [ ! -f "$macro_path" ]; then
@@ -50,18 +114,22 @@ main() {
         exit 1
     fi
     
-    # Create backup
-    print_color "info" "Creating backup..."
-    cp "$macro_path" "$macro_path$BACKUP_SUFFIX"
+    # Create backup in backup directory
+    local backup_file="$BACKUP_DIR/$(basename "$MACRO_FILE")$BACKUP_SUFFIX"
+    print_color "info" "Creating backup in: $backup_file"
+    cp "$macro_path" "$backup_file" || {
+        print_color "error" "Failed to create backup"
+        exit 1
+    }
     
     # Remove existing START_PRINT and PRINT_START macros if they exist
     print_color "info" "Updating START_PRINT macro..."
     sed -i '/\[gcode_macro START_PRINT\]/,/^[[:space:]]*$/d' "$macro_path"
     sed -i '/\[gcode_macro PRINT_START\]/,/^[[:space:]]*$/d' "$macro_path"
     
-    # Append new START_PRINT macro
+    # Append new START_PRINT macro (your existing macro content here)
     cat >> "$macro_path" << 'EOL'
-
+    
 #####################################################################
 #------------------- A better start_print macro --------------------#
 #####################################################################
@@ -182,6 +250,7 @@ gcode:
     #PROBE_EDDY_NG_TAP                                          # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
 
     SMART_PARK                                                  # Parks the toolhead near the beginning of the print
+
     # Uncomment for bed mesh (2 of 2)
     #STATUS_MESHING                                             # Sets SB-LEDs to bed mesh-mode
     M117 Bed mesh                                              # Display bed mesh status
@@ -206,9 +275,6 @@ gcode:
     
     #STATUS_PRINTING                                          # Sets SB-LEDs to printing-mode
 
-[gcode_macro PRINT_START]
-gcode:
-    START_PRINT {rawparams}
 EOL
     
     # Add include to printer.cfg if needed
@@ -220,15 +286,9 @@ EOL
     fi
     
     print_color "success" "START_PRINT macro has been updated!"
-    print_color "info" "Would you like to restart Klipper? (y/N)"
-    read -r response
-    if [[ "$response" =~ ^[Yy]$ ]]; then
-        if curl -s "http://localhost:7125/printer/firmware_restart" -H "Content-Type: application/json" -X POST; then
-            print_color "success" "Klipper restarting..."
-        else
-            print_color "error" "Failed to restart Klipper"
-        fi
-    fi
+    
+    # Handle restart prompt
+    handle_restart_prompt
 }
 
 # Run the script
