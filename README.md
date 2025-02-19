@@ -2,7 +2,7 @@
   <br>
   <img src="img/start.png" width="75""></a>
   <br>
-    A better start_print macro
+    A better START_PRINT macro
   <br>
 </h1>
 
@@ -15,7 +15,8 @@ There are STATUS_ macros built into the start print sequence. These have all bee
 This start_print macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print. </B>
 
 ## :warning: REQUIRED changes in your slicer :warning:
-You need to replace your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
+> [!IMPORTANT]
+>You need to replace your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
 
 <details>
 <summary>SuperSlicer</summary>
@@ -60,9 +61,11 @@ start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temp
 
 ## :warning: OPTIONAL changes in your printer configuration :warning:
 
-The start_print macro has predefined, but commented out, names for nevermore and chamber thermistor. If you are adding a nevermore and/or a chamnber thermistor, make sure that yours are named correctly. In your printer.cfg file verify the following:
+> [!IMPORTANT]
+>The start_print macro has predefined, but commented out, names for nevermore and chamber thermistor. If you are adding a nevermore and/or a chamnber thermistor, make sure that yours are named correctly. In your printer.cfg file verify the following:
 
-**Chamber thermistor**:
+<details>
+<summary>Chamber thermistor</summary>
 Make sure chamber thermistor is named "chamber" and update XXX.
 
 ```
@@ -70,8 +73,10 @@ Make sure chamber thermistor is named "chamber" and update XXX.
 sensor_type:  XXX
 sensor_pin:   XXX
 ```
+</details>
 
-**Nevermore**:
+<details>
+<summary>Nevermore</summary>
 Make sure nevermore is named "nevermore" and update XXX.
 
 ```
@@ -80,10 +85,12 @@ pin: XXX
 value: 0
 shutdown_value: 0
 ```
+</details>
 
-Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro) to turn the nevermore off.
+> [!NOTE]
+>Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro) to turn the nevermore off.
 
-# START_PRINT Macro
+## START_PRINT Macro
 
 <details>
 <summary>Auto Install Script</summary>
@@ -275,7 +282,7 @@ Hungry for more macromania? Make sure to check out these awesome links.
 
 ## Credits
 
-A big thank you to the Voron Communuity for helping make this macro. 
+A big thank you to the Klipper communuity for helping make this macro. 
 
 ## Feedback
 
