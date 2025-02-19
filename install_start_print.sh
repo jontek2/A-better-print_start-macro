@@ -2,7 +2,7 @@
 #####################################################################
 # START_PRINT/PRINT_START Macro Installation Script for Klipper
 # Author: ss1gohan13
-# Created: 2025-02-19 05:54:32 UTC
+# Created: 2025-02-19 06:04:28 UTC
 # Repository: https://github.com/ss1gohan13/A-better-print_start-macro-SV08
 #####################################################################
 
@@ -34,53 +34,62 @@ create_backup_dir() {
     fi
 }
 
-# Restart Klipper function
+# Improved restart Klipper function with better error handling
 restart_klipper() {
     print_color "info" "Attempting to restart Klipper..."
     
     # Try Moonraker API first
-    if curl -s "http://localhost:7125/printer/firmware_restart" -H "Content-Type: application/json" -X POST; then
-        print_color "success" "Klipper firmware restart initiated"
+    local moonraker_response
+    moonraker_response=$(curl -s -w "%{http_code}" "http://localhost:7125/printer/firmware_restart" -H "Content-Type: application/json" -X POST)
+    
+    if [ "$moonraker_response" = "200" ] || [ "$moonraker_response" = "204" ]; then
+        print_color "success" "Klipper firmware restart initiated via Moonraker"
         return 0
     else
-        print_color "warning" "Moonraker API restart failed, attempting service restart..."
-        if sudo systemctl restart klipper; then
-            print_color "success" "Klipper service restarted"
-            return 0
+        print_color "warning" "Moonraker API restart failed (HTTP: $moonraker_response), attempting service restart..."
+        
+        # Check if systemctl is available and user has sudo access
+        if command -v systemctl >/dev/null 2>&1; then
+            if sudo -n systemctl restart klipper 2>/dev/null; then
+                print_color "success" "Klipper service restarted successfully"
+                return 0
+            else
+                print_color "error" "Failed to restart Klipper service. Please run: sudo systemctl restart klipper"
+                return 1
+            fi
         else
-            print_color "error" "Failed to restart Klipper"
+            print_color "error" "System service manager not found. Please restart Klipper manually"
             return 1
         fi
     fi
 }
 
-# Handle restart prompt
+# Handle restart prompt with improved input handling
 handle_restart_prompt() {
-    # Make sure we're reading from an actual terminal
-    if [ -t 0 ]; then
-        while true; do
-            print_color "info" "Would you like to restart Klipper now? (y/N): "
-            read -r response < /dev/tty
-            case $response in
-                [Yy]* )
-                    restart_klipper
-                    break
-                    ;;
-                [Nn]* | "" )
-                    print_color "info" "Remember to restart Klipper manually to apply changes"
-                    break
-                    ;;
-                * )
-                    print_color "warning" "Please answer y or n"
-                    ;;
-            esac
-        done
-    else
-        # If not running interactively, provide instructions
-        print_color "info" "To restart Klipper, run one of these commands:"
+    exec < /dev/tty > /dev/tty 2> /dev/tty || {
+        print_color "warning" "Not running interactively. To restart Klipper manually:"
         print_color "info" "1. curl -s 'http://localhost:7125/printer/firmware_restart' -X POST"
         print_color "info" "2. sudo systemctl restart klipper"
-    fi
+        return
+    }
+    
+    while true; do
+        print_color "info" "Would you like to restart Klipper now? (y/N): "
+        read -r response
+        case $response in
+            [Yy]* )
+                restart_klipper
+                break
+                ;;
+            [Nn]* | "" )
+                print_color "info" "Remember to restart Klipper manually to apply changes"
+                break
+                ;;
+            * )
+                print_color "warning" "Please answer y or n"
+                ;;
+        esac
+    done
 }
 
 # Main installation function
@@ -127,9 +136,8 @@ main() {
     sed -i '/\[gcode_macro START_PRINT\]/,/^[[:space:]]*$/d' "$macro_path"
     sed -i '/\[gcode_macro PRINT_START\]/,/^[[:space:]]*$/d' "$macro_path"
     
-    # Append new START_PRINT macro (your existing macro content here)
+    # Append new START_PRINT macro
     cat >> "$macro_path" << 'EOL'
-    
 #####################################################################
 #------------------- A better start_print macro --------------------#
 #####################################################################
@@ -274,7 +282,6 @@ gcode:
     M117 Printer goes brrr                                   # Display print starting
     
     #STATUS_PRINTING                                          # Sets SB-LEDs to printing-mode
-
 EOL
     
     # Add include to printer.cfg if needed
@@ -287,7 +294,8 @@ EOL
     
     print_color "success" "START_PRINT macro has been updated!"
     
-    # Handle restart prompt
+    # Handle restart prompt with proper terminal redirection
+    print_color "info" "Processing restart request..."
     handle_restart_prompt
 }
 
