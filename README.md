@@ -87,6 +87,17 @@ shutdown_value: 0
 
 Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro) to turn the nevermore off.
 
+<details>
+<summary>Install Script</summary>
+
+```
+cd ~
+git clone https://github.com/ss1gohan13/SV08-Replacement-Macros.git
+cd A-better-print_start-macro-SV08
+./install_start_print.sh
+```
+</details>
+
 # START_PRINT Macro
 
 > [!WARNING]  
