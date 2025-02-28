@@ -145,8 +145,8 @@ gcode:
         #STATUS_HEATING                                             # Sets SB-LEDs to heating-mode
         M106 S255                                                   # Turns on the PT-fan
         # Conditional check for nevermore pin
-        {% if 'nevermore' in printer.configfile.settings %}
-            SET_PIN PIN=nevermore VALUE=1                           # Turns on the Nevermore
+        {% if printer["output_pin nevermore"] is defined %}
+            SET_PIN PIN=nevermore VALUE=1  # Turns on the Nevermore
         {% endif %}
         G1 X{x_wait} Y{y_wait} Z15 F9000                          # Go to the center of the bed
         M190 S{target_bed}                                         # Sets the target temp for the bed
