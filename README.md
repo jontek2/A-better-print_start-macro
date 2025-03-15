@@ -203,16 +203,21 @@ gcode:
             #STATUS_LEVELING                                       # Sets SB-LEDs to leveling-mode
             M117 Z-tilt adjust                                    # Display Z-tilt adjustment
             Z_TILT_ADJUST                                         # Levels the buildplate via z_tilt_adjust
-            G28 Z                                                 # Homes Z again after z_tilt_adjust
         {% endif %}
     {% elif 'quad_gantry_level' in printer %}
         {% if not printer.quad_gantry_level.applied %}
             #STATUS_LEVELING                                      # Sets SB-LEDs to leveling-mode
-            M117 QGL                                             # Display QGL status
-            QUAD_GANTRY_LEVEL                                    # Levels the gantry
+            M117 QGL                                              # Display QGL status
+            QUAD_GANTRY_LEVEL                                     # Levels the gantry
             #STATUS_HOMING                                        # Sets SB-LEDs to homing-mode
-            G28 Z                                                # Homes Z again after QGL
         {% endif %}
+    {% endif %}
+
+    # Perform a conditional G28 Z if it hasn't been performed yet
+    {% if not printer.g28_z_performed %}
+        G28 Z
+        # Indicate that G28 Z has been performed
+        {% set printer.g28_z_performed = True %}
     {% endif %}
 
     # Heating the nozzle to 150C. This helps with getting a correct Z-home
