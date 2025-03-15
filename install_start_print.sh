@@ -135,8 +135,8 @@ gcode:
         #STATUS_HEATING                                             # Sets SB-LEDs to heating-mode
         M106 S255                                                   # Turns on the PT-fan
         # Conditional check for nevermore pin
-        {% if 'nevermore' in printer.configfile.settings %}
-            SET_PIN PIN=nevermore VALUE=1                           # Turns on the Nevermore
+        {% if printer["output_pin nevermore"] is defined %}
+            SET_PIN PIN=nevermore VALUE=1  # Turns on the Nevermore
         {% endif %}
         G1 X{x_wait} Y{y_wait} Z15 F9000                          # Go to the center of the bed
         M190 S{target_bed}                                         # Sets the target temp for the bed
@@ -193,16 +193,21 @@ gcode:
             #STATUS_LEVELING                                       # Sets SB-LEDs to leveling-mode
             M117 Z-tilt adjust                                    # Display Z-tilt adjustment
             Z_TILT_ADJUST                                         # Levels the buildplate via z_tilt_adjust
-            G28 Z                                                 # Homes Z again after z_tilt_adjust
         {% endif %}
     {% elif 'quad_gantry_level' in printer %}
         {% if not printer.quad_gantry_level.applied %}
             #STATUS_LEVELING                                      # Sets SB-LEDs to leveling-mode
-            M117 QGL                                             # Display QGL status
-            QUAD_GANTRY_LEVEL                                    # Levels the gantry
+            M117 QGL                                              # Display QGL status
+            QUAD_GANTRY_LEVEL                                     # Levels the gantry
             #STATUS_HOMING                                        # Sets SB-LEDs to homing-mode
-            G28 Z                                                # Homes Z again after QGL
         {% endif %}
+    {% endif %}
+
+    # Perform a conditional G28 Z if it hasn't been performed yet
+    {% if not printer.g28_z_performed %}
+        G28 Z
+        # Indicate that G28 Z has been performed
+        {% set printer.g28_z_performed = True %}
     {% endif %}
 
     # Heating the nozzle to 150C. This helps with getting a correct Z-home
@@ -216,7 +221,7 @@ gcode:
     #STATUS_COOLING                                              # Sets SB-LEDs to cooling-mode
     #M109 S150                                                   # Heats the nozzle to 150C
 
-    #STATUS_CALIBRATING_Z                                       # Sets SB-LEDs to cooling-mode
+    #STATUS_CALIBRATING_Z                                       # Sets SB-LEDs to z-calibration-mode
     #M117 Tappy Tap                                             # Display tappy tap message
     #PROBE_EDDY_NG_TAP                                          # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
 
