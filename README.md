@@ -214,10 +214,8 @@ gcode:
     {% endif %}
 
     # Perform a conditional G28 Z if it hasn't been performed yet
-    {% if not printer.g28_z_performed %}
-        G28 Z
-        # Indicate that G28 Z has been performed
-        {% set printer.g28_z_performed = True %}
+    {% elif 'z' not in printer.toolhead.homed_axes %}
+        G28 Z                          # Home Z if only Z is unhomed
     {% endif %}
 
     # Heating the nozzle to 150C. This helps with getting a correct Z-home
@@ -229,7 +227,10 @@ gcode:
     CLEAN_NOZZLE EXTRUDER={target_extruder}                    # Clean nozzle before printing
 
     #STATUS_COOLING                                              # Sets SB-LEDs to cooling-mode
-    #M109 S150                                                   # Heats the nozzle to 150C
+    M109 S150                                                   # Heats the nozzle to 150C
+
+    M117 Hang tight...                                          # Display waiting message...
+    G4 60000                                                    # Wait 1 min t stablize nozzle temp at 150C
 
     #STATUS_CALIBRATING_Z                                       # Sets SB-LEDs to z-calibration-mode
     #M117 Tappy Tap                                             # Display tappy tap message
