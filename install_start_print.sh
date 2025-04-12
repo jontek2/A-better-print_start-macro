@@ -204,10 +204,9 @@ gcode:
     {% endif %}
 
     # Perform a conditional G28 Z if it hasn't been performed yet
-    {% if not printer.g28_z_performed %}
-        G28 Z
-        # Indicate that G28 Z has been performed
-        {% set printer.g28_z_performed = True %}
+    # Perform a conditional G28 Z if it hasn't been performed yet
+    {% elif 'z' not in printer.toolhead.homed_axes %}
+        G28 Z                          # Home Z if only Z is unhomed
     {% endif %}
 
     # Heating the nozzle to 150C. This helps with getting a correct Z-home
