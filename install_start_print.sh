@@ -194,26 +194,34 @@ gcode:
         G4 P{soak_time}                                          # Execute soak timer
     {% endif %}
 
-    # Conditional method for Z_TILT_ADJUST and QUAD_GANTRY_LEVEL
-    {% if 'z_tilt' in printer %}
-        {% if not printer.z_tilt.applied %}
-            # STATUS_LEVELING                                      # Sets SB-LEDs to leveling-mode
-            M117 Z-tilt...                                       # Display Z-tilt adjustment
-            Z_TILT_ADJUST                                        # Levels the buildplate via z_tilt_adjust
+    # Check if GANTRY_LEVELING macro exists, use it if available
+    {% if printer.configfile.config['gcode_macro GANTRY_LEVELING'] is defined %}
+        # STATUS_LEVELING                                        # Sets SB-LEDs to leveling-mode
+        M117 Gantry Leveling...                                 # Display gantry leveling status
+        GANTRY_LEVELING                                         # Performs the appropriate leveling method (QGL or Z_TILT)
+    {% else %}
+        # Fallback to traditional method if GANTRY_LEVELING doesn't exist
+        # Conditional method for Z_TILT_ADJUST and QUAD_GANTRY_LEVEL
+        {% if 'z_tilt' in printer %}
+            {% if not printer.z_tilt.applied %}
+                # STATUS_LEVELING                                  # Sets SB-LEDs to leveling-mode
+                M117 Z-tilt...                                    # Display Z-tilt adjustment
+                Z_TILT_ADJUST                                     # Levels the buildplate via z_tilt_adjust
+            {% endif %}
+        {% elif 'quad_gantry_level' in printer %}
+            {% if not printer.quad_gantry_level.applied %}
+                # STATUS_LEVELING                                  # Sets SB-LEDs to leveling-mode
+                M117 QGL...                                       # Display QGL status
+                QUAD_GANTRY_LEVEL                                 # Levels the gantry
+            {% endif %}
         {% endif %}
-    {% elif 'quad_gantry_level' in printer %}
-        {% if not printer.quad_gantry_level.applied %}
-            # STATUS_LEVELING                                      # Sets SB-LEDs to leveling-mode
-            M117 QGL...                                          # Display QGL status
-            QUAD_GANTRY_LEVEL                                    # Levels the gantry
-        {% endif %}
-    {% endif %}
 
-    # Conditional check to ensure Z is homed after leveling procedures
-    {% if 'z' not in printer.toolhead.homed_axes %}
-        # STATUS_HOMING                                           # Sets SB-LEDs to homing-mode
-        M117 Z homing                                           # Display Z homing status
-        G28 Z                                                   # Home Z if needed after leveling
+        # Conditional check to ensure Z is homed after leveling procedures
+        {% if 'z' not in printer.toolhead.homed_axes %}
+            # STATUS_HOMING                                        # Sets SB-LEDs to homing-mode
+            M117 Z homing                                         # Display Z homing status
+            G28 Z                                                 # Home Z if needed after leveling
+        {% endif %}
     {% endif %}
 
     # Heating the nozzle to 150C. This helps with getting a correct Z-home
