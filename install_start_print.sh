@@ -221,27 +221,27 @@ gcode:
     M117 Hotend: 150C                                           # Display hotend temperature
     M109 S150                                                   # Heats the nozzle to 150C
 
-    # M117: Cleaning the nozzle...
+    M117 Cleaning the nozzle...
     # STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
-    # CLEAN_NOZZLE EXTRUDER={target_extruder}                     # Clean nozzle before printing
+    CLEAN_NOZZLE EXTRUDER={target_extruder}                     # Clean nozzle before printing
 
-    # M117 Nozzle cooling 150C...                                # Display wait message
+    M117 Nozzle cooling 150C...                                # Display wait message
     # STATUS_COOLING                                              # Sets SB-LEDs to cooling-mode
-    # M109 S150                                                   # Heats the nozzle to 150C
+    M109 S150                                                   # Heats the nozzle to 150C
 
-    # M117 Hang tight...                                         # Display wait message
-    # G4 P60000                                                   # Wait 1 min to stablize and cooldown the nozzle
+    M117 Hang tight...                                         # Display wait message
+    G4 P60000                                                   # Wait 1 min to stablize and cooldown the nozzle
 
     # STATUS_CALIBRATING_Z                                        # Sets SB-LEDs to z-calibration-mode
-    M117 Tappy Tap...                                           # Display tappy tap message
-    PROBE_EDDY_NG_TAP                                           # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
+    # M117 Tappy Tap...                                           # Display tappy tap message
+    # PROBE_EDDY_NG_TAP                                           # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
 
     SMART_PARK                                                  # Parks the toolhead near the beginning of the print
 
     # Uncomment for bed mesh (2 of 2)
     # STATUS_MESHING                                              # Sets SB-LEDs to bed mesh-mode
     M117 Bed mesh                                               # Display bed mesh status
-    BED_MESH_CALIBRATE ADAPTIVE=1 Method=rapid_scan             # Starts bed mesh
+    BED_MESH_CALIBRATE ADAPTIVE=1 #Method=rapid_scan             # Starts bed mesh  Uncomment Method=rapid_scan for eddy rapid bed meshing
 
     M400                                                        # Wait for current moves to finish
 
