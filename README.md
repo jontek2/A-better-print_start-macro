@@ -22,7 +22,7 @@ This start_print macro will pass data from your slicer to your printer and perfo
 
 <details>
 <summary>SuperSlicer</summary>
-In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
+In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and replace it with:
 
 ```
 M104 S0 ; Stops OrcaSlicer from sending temp waits separately
@@ -32,7 +32,7 @@ START_PRINT EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 </details>
 <details>
 <summary>OrcaSlicer</summary>
-In OrcaSlicer go to "Printer settings" -> "Machine start g-code" and update it to:
+In OrcaSlicer go to "Printer settings" -> "Machine start g-code" and replace it with:
 
 ```
 M104 S0 ; Stops OrcaSlicer from sending temp waits separately
@@ -43,7 +43,7 @@ START_PRINT EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature]
 <details>
 <summary>PrusaSlicer</summary>
 
-In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and update it to:
+In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and replace it with:
 
 ```
 M104 S0 ; Stops PrusaSlicer from sending temp waits separately
@@ -54,7 +54,7 @@ start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_laye
 <details>
 <summary>Cura</summary>
 
-In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and update it to:
+In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and replace it with:
 
 ```
 start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature} MATERIAL={material_type}
