@@ -12,9 +12,9 @@
 
 [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) IS APPLIED IN THIS MACRO. YOU MUST INSTALL KAMP TO ENABLE SMART PARKING AND LINE PURGE. 
 
-There are multiple `STATUS_` macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect) nad uncomment the ones desired. 
+There are multiple `STATUS_` macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect) and uncomment the ones desired. 
 
-This start_print macro will pass data from your slicer to your printer and perform all necessary preflight commands for a successful print on your printer running Klipper. This means heatsoak, QGL/Z-tilt, bed mesh and a primeline before each print. </B>
+This start_print macro will pass data from your slicer to your printer and perform all necessary pre-flight commands for a successful print on your printer running Klipper. This means heat-soak, QGL/Z-tilt, bed mesh and a purge line before each print. </B>
 
 ## :warning: REQUIRED changes in your slicer :warning:
 > [!IMPORTANT]
@@ -64,7 +64,7 @@ start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temp
 ## :warning: OPTIONAL changes in your printer configuration :warning:
 
 > [!IMPORTANT]
->The start_print macro has predefined, but commented out, names for nevermore and chamber thermistor. If you are adding a nevermore and/or a chamnber thermistor, make sure that yours are named correctly. In your printer.cfg file verify the following:
+>The start_print macro has predefined, but commented out, names for nevermore and chamber thermistor. If you are adding a nevermore and/or a chamber thermistor, make sure that yours are named correctly. In your printer.cfg file verify the following:
 
 <details>
 <summary>Chamber thermistor</summary>
@@ -104,7 +104,7 @@ curl -sSL https://raw.githubusercontent.com/ss1gohan13/A-better-print_start-macr
 
 </details>
 
-Manual installation: Copy the macro and replace it with your old print_start/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and uncomment parts of this macro.
+Manual installation: Copy the macro and replace it with your old print_start/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and remove any commented parts of this macro that may be needed.
 
 <details>
 <summary>EXPAND THIS TO SEE THE START PRINT MACRO</summary>
@@ -282,9 +282,9 @@ gcode:
 ```
 </details>
 
-## Changelog
+## Change log
 
-02-19-2025: Corrected formatting, spelling, order of operations, and changelog
+02-19-2025: Corrected formatting, spelling, order of operations, and change log
 
 02-18-2025: Initial installation script created
 
