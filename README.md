@@ -64,7 +64,7 @@ start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temp
 ## :warning: OPTIONAL changes in your printer configuration :warning:
 
 > [!IMPORTANT]
->The start_print macro has predefined, but commented out, names for nevermore and chamber thermistor. If you are adding a nevermore and/or a chamber thermistor, make sure that yours are named correctly. In your printer.cfg file verify the following:
+>The start_print macro has predefined names for nevermore and chamber thermistor. If you do not have neither chamber thermistor, or nevermore, no changes are needed. If you are adding a nevermore and/or a chamber thermistor, make sure that yours are named correctly. In your printer.cfg file verify the following:
 
 <details>
 <summary>Chamber thermistor</summary>
@@ -90,7 +90,7 @@ shutdown_value: 0
 </details>
 
 > [!NOTE]
->Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro) to turn the nevermore off.
+>Remember to setup your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro) to turn the nevermore off.
 
 ## START_PRINT Macro
 
