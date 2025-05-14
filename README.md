@@ -153,9 +153,6 @@ gcode:
         
         # Start chamber heating progress monitoring (modify just this section)
         M117 Monitoring chamber: {target_chamber}C                # Display chamber monitoring status
-        START_CHAMBER_PROGRESS_MONITOR TARGET={target_chamber}    # Start with specific target
-        
-        M117 Heatsoak: {target_chamber}C                         # Display heatsoak info
         # Conditional check for chamber thermistor
         {% if printer["temperature_sensor chamber"] is defined %}
             TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for the chamber to reach the desired temp
