@@ -143,16 +143,11 @@ gcode:
         
         # Start chamber heating progress monitoring (modify just this section)
         M117 Monitoring chamber: {target_chamber}C                # Display chamber monitoring status
-        START_CHAMBER_PROGRESS_MONITOR TARGET={target_chamber}    # Start with specific target
-        
-        M117 Heatsoak: {target_chamber}C                         # Display heatsoak info
         # Conditional check for chamber thermistor
         {% if printer["temperature_sensor chamber"] is defined %}
             TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for the chamber to reach the desired temp
-            STOP_CHAMBER_PROGRESS_MONITOR                         # Stop the progress monitoring once target is reached
         {% else %}
             G4 P900000                                           # Wait 15 minutes for heatsoak
-            STOP_CHAMBER_PROGRESS_MONITOR                         # Stop the progress monitoring after time elapses
         {% endif %}
 
     # If the bed temp is not over 90c, then handle soak based on material
