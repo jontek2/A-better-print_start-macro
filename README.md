@@ -12,7 +12,7 @@
 
 [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) IS APPLIED IN THIS MACRO. YOU MUST INSTALL KAMP TO ENABLE SMART PARKING AND LINE PURGE. 
 
-There are multiple `STATUS_` macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect) and uncomment the ones desired. 
+There are multiple `#STATUS_` macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect) and uncomment the ones desired. 
 
 This start_print macro will pass data from your slicer to your printer and perform all necessary pre-flight commands for a successful print on your printer running Klipper. This means heat-soak, QGL/Z-tilt, bed mesh and a purge line before each print. </B>
 
@@ -124,7 +124,7 @@ gcode:
     {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
     # Homes the printer, sets absolute positioning, and updates the Stealthburner LEDs.
-    # STATUS_HOMING
+    #STATUS_HOMING
     # Check homing status and home if needed
     {% if "xyz" not in printer.toolhead.homed_axes %}
         G28                                                      # Full home if not already homed
@@ -142,7 +142,7 @@ gcode:
     # Checks if the bed temp is higher than 90C - if so, then trigger a heat soak.
     {% if params.BED|int > 90 %}
         M117 Bed: {target_bed}C                                  # Display bed temperature
-        # STATUS_HEATING                                           # Sets SB-LEDs to heating-mode
+        #STATUS_HEATING                                           # Sets SB-LEDs to heating-mode
         M106 S255                                                # Turns on the PT-fan
         # Conditional check for nevermore pin
         {% if printer["output_pin nevermore"] is defined %}
@@ -163,7 +163,7 @@ gcode:
     # If the bed temp is not over 90c, then handle soak based on material
     {% else %}
         M117 Bed: {target_bed}C                                  # Display bed temperature
-        # STATUS_HEATING                                           # Sets SB-leds to heating-mode
+        #STATUS_HEATING                                           # Sets SB-leds to heating-mode
         G1 X{x_wait} Y{y_wait} Z15 F9000                         # Go to center of the bed
         M190 S{target_bed}                                       # Sets the target temp for the bed
         
@@ -198,56 +198,56 @@ gcode:
         M117 Soak: {soak_time/60000|int}min ({raw_material})     # Display soak time and material
         G4 P{soak_time}                                          # Execute soak timer
     {% endif %}
-
+    
     # Check if GANTRY_LEVELING macro exists, use it if available
-   {% if printer.configfile.config['gcode_macro GANTRY_LEVELING'] is defined %}
-       STATUS_LEVELING                                        # Sets SB-LEDs to leveling-mode
-       M117 Gantry Leveling...                                 # Display gantry leveling status
-       GANTRY_LEVELING                                         # Performs the appropriate leveling method (QGL or Z_TILT)
-   {% else %}
-       # Fallback to traditional method if GANTRY_LEVELING doesn't exist
-       # Conditional method for Z_TILT_ADJUST and QUAD_GANTRY_LEVEL
-       {% if 'z_tilt' in printer %}
-           STATUS_LEVELING                                  # Sets SB-LEDs to leveling-mode
-           M117 Z-tilt...                                    # Display Z-tilt adjustment
-           Z_TILT_ADJUST                                     # Levels the buildplate via z_tilt_adjust
-       {% elif 'quad_gantry_level' in printer %}
-           STATUS_LEVELING                                  # Sets SB-LEDs to leveling-mode
-           M117 QGL...                                       # Display QGL status
-           QUAD_GANTRY_LEVEL                                 # Levels the gantry
-       {% endif %}
-   {% endif %}
-   # Conditional check to ensure Z is homed after leveling procedures
-   {% if 'z' not in printer.toolhead.homed_axes %}
-       STATUS_HOMING                                        # Sets SB-LEDs to homing-mode
-       M117 Z homing                                         # Display Z homing status
-       G28 Z                                                 # Home Z if needed after leveling
-   {% endif %}
+    {% if printer.configfile.config['gcode_macro GANTRY_LEVELING'] is defined %}
+        #STATUS_LEVELING                                        # Sets SB-LEDs to leveling-mode
+        M117 Gantry Leveling...                                 # Display gantry leveling status
+        GANTRY_LEVELING                                         # Performs the appropriate leveling method (QGL or Z_TILT)
+    {% else %}
+        # Fallback to traditional method if GANTRY_LEVELING doesn't exist
+        # Conditional method for Z_TILT_ADJUST and QUAD_GANTRY_LEVEL
+        {% if 'z_tilt' in printer %}
+            #STATUS_LEVELING                                  # Sets SB-LEDs to leveling-mode
+            M117 Z-tilt...                                    # Display Z-tilt adjustment
+            Z_TILT_ADJUST                                     # Levels the buildplate via z_tilt_adjust
+        {% elif 'quad_gantry_level' in printer %}
+            #STATUS_LEVELING                                  # Sets SB-LEDs to leveling-mode
+            M117 QGL...                                       # Display QGL status
+            QUAD_GANTRY_LEVEL                                 # Levels the gantry
+        {% endif %}
+    {% endif %}
+    # Conditional check to ensure Z is homed after leveling procedures
+    {% if 'z' not in printer.toolhead.homed_axes %}
+        #STATUS_HOMING                                        # Sets SB-LEDs to homing-mode
+        M117 Z homing                                         # Display Z homing status
+        G28 Z                                                 # Home Z if needed after leveling
+    {% endif %}
 
     # Heating the nozzle to 150C. This helps with getting a correct Z-home
-    # STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
+    #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
     M117 Hotend: 150C                                           # Display hotend temperature
     M109 S150                                                   # Heats the nozzle to 150C
 
     M117 Cleaning the nozzle...
-    # STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
-    CLEAN_NOZZLE EXTRUDER={target_extruder}                     # Clean nozzle before printing
+    #STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
+    CLEAN_NOZZLE #EXTRUDER={target_extruder}                     # Clean nozzle before printing
 
-    M117 Nozzle cooling 150C...                                # Display wait message
-    # STATUS_COOLING                                              # Sets SB-LEDs to cooling-mode
-    M109 S150                                                   # Heats the nozzle to 150C
+    # M117 Nozzle cooling 150C...                                # Display wait message
+    #STATUS_COOLING                                              # Sets SB-LEDs to cooling-mode
+    # M109 S150                                                   # Heats the nozzle to 150C
 
-    M117 Hang tight...                                         # Display wait message
-    G4 P60000                                                   # Wait 1 min to stablize and cooldown the nozzle
+    # M117 Hang tight...                                         # Display wait message
+    # G4 P60000                                                   # Wait 1 min to stablize and cooldown the nozzle
 
-    # STATUS_CALIBRATING_Z                                        # Sets SB-LEDs to z-calibration-mode
-    # M117 Tappy Tap...                                           # Display tappy tap message
-    # PROBE_EDDY_NG_TAP                                           # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
+    #STATUS_CALIBRATING_Z                                        # Sets SB-LEDs to z-calibration-mode
+    #M117 Tappy Tap...                                           # Display tappy tap message
+    #PROBE_EDDY_NG_TAP                                           # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
 
     SMART_PARK                                                  # Parks the toolhead near the beginning of the print
 
     # Uncomment for bed mesh (2 of 2)
-    # STATUS_MESHING                                              # Sets SB-LEDs to bed mesh-mode
+    #STATUS_MESHING                                              # Sets SB-LEDs to bed mesh-mode
     M117 Bed mesh                                               # Display bed mesh status
     BED_MESH_CALIBRATE ADAPTIVE=1 #Method=rapid_scan             # Starts bed mesh  Uncomment Method=rapid_scan for eddy rapid bed meshing
 
@@ -257,18 +257,18 @@ gcode:
 
     # Heats up the nozzle to target via data from the slicer
     M117 Hotend: {target_extruder}C                             # Display target hotend temperature
-    # STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
+    #STATUS_HEATING                                              # Sets SB-LEDs to heating-mode
     M107                                                        # Turns off part cooling fan
     M109 S{target_extruder}                                     # Heats the nozzle to printing temp
     
     # Gets ready to print by doing a purge line and updating the SB-LEDs
     M117 The purge...                                           # Display purge status
-    # STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
+    #STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
     LINE_PURGE                                                  # KAMP line purge
 
     M117 Printer goes brrr                                      # Display print starting
     
-    # STATUS_PRINTING                                             # Sets SB-LEDs to printing-mode
+    #STATUS_PRINTING                                             # Sets SB-LEDs to printing-mode
 ```
 </details>
 
