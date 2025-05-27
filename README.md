@@ -219,7 +219,6 @@ gcode:
       # STATUS_HOMING                                        # Sets SB-LEDs to homing-mode
       M117 Z homing                                         # Display Z homing status
       G28 Z                                                 # Home Z if needed after leveling
-        {% endif %}
     {% endif %}
 
     # Heating the nozzle to 150C. This helps with getting a correct Z-home
