@@ -156,10 +156,8 @@ gcode:
         # Conditional check for chamber thermistor
         {% if printer["temperature_sensor chamber"] is defined %}
             TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for the chamber to reach the desired temp
-            STOP_CHAMBER_PROGRESS_MONITOR                         # Stop the progress monitoring once target is reached
         {% else %}
             G4 P900000                                           # Wait 15 minutes for heatsoak
-            STOP_CHAMBER_PROGRESS_MONITOR                         # Stop the progress monitoring after time elapses
         {% endif %}
 
     # If the bed temp is not over 90c, then handle soak based on material
