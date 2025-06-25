@@ -157,6 +157,7 @@ gcode:
         {% if printer["temperature_sensor chamber"] is defined %}
             TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for the chamber to reach the desired temp
         {% else %}
+            M117 Soak: 15min (No chamber thermistor)
             G4 P900000                                           # Wait 15 minutes for heatsoak
         {% endif %}
 
