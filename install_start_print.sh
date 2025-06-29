@@ -232,8 +232,8 @@ gcode:
     # G4 P60000                                                   # Wait 1 min to stablize and cooldown the nozzle
 
     #STATUS_CALIBRATING_Z                                        # Sets SB-LEDs to z-calibration-mode
-    M117 Tappy Tap...                                           # Display tappy tap message
-    PROBE_EDDY_NG_TAP                                           # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
+    #M117 Tappy Tap...                                           # Display tappy tap message
+    #PROBE_EDDY_NG_TAP                                           # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
 
     SMART_PARK                                                  # Parks the toolhead near the beginning of the print
 
