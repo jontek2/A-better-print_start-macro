@@ -240,7 +240,7 @@ gcode:
     # Uncomment for bed mesh (2 of 2)
     #STATUS_MESHING                                              # Sets SB-LEDs to bed mesh-mode
     M117 Bed mesh                                               # Display bed mesh status
-    BED_MESH_CALIBRATE ADAPTIVE=1 Method=rapid_scan             # Starts bed mesh  Uncomment Method=rapid_scan for eddy rapid bed meshing
+    BED_MESH_CALIBRATE ADAPTIVE=1 #Method=rapid_scan             # Starts bed mesh  Uncomment Method=rapid_scan for eddy rapid bed meshing
 
     M400                                                        # Wait for current moves to finish
 
