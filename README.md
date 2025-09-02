@@ -173,7 +173,9 @@ gcode:
     #{% if "xyz" not in printer.toolhead.homed_axes %}
       #G28
     #{% endif %}
-    #_QUAD_GANTRY_LEVEL horizontal_move_z=20 retries=1 retry_tolerance=1.000
+    #{% if not printer.quad_gantry_level.applied %}
+      #_QUAD_GANTRY_LEVEL horizontal_move_z=20 retries=1 retry_tolerance=1.000
+    #{% endif %}
     #_QUAD_GANTRY_LEVEL horizontal_move_z=3
     #G28 Z
 
