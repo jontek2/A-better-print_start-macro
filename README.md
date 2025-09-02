@@ -159,10 +159,25 @@ gcode:
   #Z_TILT_ADJUST                                        # Level the printer via Z_TILT_ADJUST
   #G28 Z                                                # Home Z again after Z_TILT_ADJUST
 
-  ##  Uncomment for V2.4 (Quad gantry level AKA QGL)
+  ##  Uncomment for V2.4 Faster QGL (regular QGL later)
   #SET_DISPLAY_TEXT MSG="Leveling"                      # Display info on display
   #STATUS_LEVELING                                      # Set LEDs to leveling-mode
-  #QUAD_GANTRY_LEVEL                                    # Level the printer via QGL
+  #QUAD_GANTRY_LEVEL horizontal_move_z=20 retries=1 retry_tolerance=1.000    #rough QGL (one run if already roughly alligned, two if gantry is heavily skewed)
+  #QUAD_GANTRY_LEVEL horizontal_move_z=3                # secondary & faster QGL, default retries and tolerance.
+  #G28 Z                                                # Home Z again after QGL
+
+  ## ALTERNATIVELY add this to your macros to change QGL completely: (and use the regular setup below)
+  #[gcode_macro QUAD_GANTRY_LEVEL]
+  #rename_existing: _QUAD_GANTRY_LEVEL
+  #gcode:
+    #_QUAD_GANTRY_LEVEL horizontal_move_z=20 retries=1 retry_tolerance=1.000
+    #_QUAD_GANTRY_LEVEL horizontal_move_z=3
+    #G28 Z
+
+  ##  Uncomment for V2.4 regular QGL (Quad gantry level AKA QGL)
+  #SET_DISPLAY_TEXT MSG="Leveling"                      # Display info on display
+  #STATUS_LEVELING                                      # Set LEDs to leveling-mode
+  #QUAD_GANTRY_LEVEL                                    # QGL
   #G28 Z                                                # Home Z again after QGL
 
   ##  Uncomment for bed mesh (2 of 2 for bed mesh)
