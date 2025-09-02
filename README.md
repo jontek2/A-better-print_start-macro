@@ -167,7 +167,7 @@ gcode:
   #G28 Z                                                # Home Z again after QGL
 
   ## ALTERNATIVELY add this to your macros to change QGL completely: (and use the regular setup below)
-  #[gcode_macro QUAD_GANTRY_LEVEL]
+  #[gcode_macro QUAD_GANTRY_LEVEL] # !!!!!!! DO NOT UNCOMMENT THIS HERE, COPY IT OUT OF PRINT_START !!!!!!!!
   #rename_existing: _QUAD_GANTRY_LEVEL
   #gcode:
     #{% if "xyz" not in printer.toolhead.homed_axes %}
