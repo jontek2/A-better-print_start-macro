@@ -162,7 +162,9 @@ gcode:
   ##  Uncomment for V2.4 Faster QGL (regular QGL later)
   #SET_DISPLAY_TEXT MSG="Leveling"                      # Display info on display
   #STATUS_LEVELING                                      # Set LEDs to leveling-mode
-  #QUAD_GANTRY_LEVEL horizontal_move_z=20 retries=1 retry_tolerance=1.000    #rough QGL (one run if already roughly alligned, two if gantry is heavily skewed)
+  #{% if not printer.quad_gantry_level.applied %}       # checks if QGL is already applied, if not rough QGL is executed
+    #QUAD_GANTRY_LEVEL horizontal_move_z=20 retries=1 retry_tolerance=1.000    #rough QGL (one run if already roughly alligned, two if gantry is heavily skewed)
+  #{% endif %}
   #QUAD_GANTRY_LEVEL horizontal_move_z=3                # secondary & faster QGL, default retries and tolerance.
   #G28 Z                                                # Home Z again after QGL
 
