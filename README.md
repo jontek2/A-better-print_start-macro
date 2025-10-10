@@ -91,7 +91,7 @@ shutdown_value: 0
 
 ## :warning: Friendly reminder :warning:
 
-Remember to setup your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro)!
+Remember to setup your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro) if you haven't already!
 
 ## START_PRINT Macro
 
