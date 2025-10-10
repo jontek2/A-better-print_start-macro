@@ -8,7 +8,7 @@
 
 ## :warning: Required changes to your printer system :warning:
 
-<B> SV08 USERS! DROP YOUR MAX ACCEL TO 20K IN THE PRINTER CONFIG
+<B> ATTENTION SV08 USERS! DROP YOUR MAX ACCEL TO 20K IN THE PRINTER CONFIG!
 
 [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) IS APPLIED IN THIS MACRO. YOU MUST INSTALL KAMP TO ENABLE SMART PARKING AND LINE PURGE. 
 
