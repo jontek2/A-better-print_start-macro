@@ -93,6 +93,9 @@ shutdown_value: 0
 
 Remember to setup your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro) if you haven't already!
 
+> [!IMPORTANT]
+> If you do not have an end print macro in place, your toolhead will sit at the last part of your print, causing the print to deform where the nozzle is.
+
 ## START_PRINT Macro
 
 <details>
