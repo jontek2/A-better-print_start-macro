@@ -89,8 +89,9 @@ shutdown_value: 0
 ```
 </details>
 
-> [!NOTE]
->Remember to setup your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro) to turn the nevermore off.
+## :warning: Friendly reminder :warning:
+
+Remember to setup your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro)!
 
 ## START_PRINT Macro
 
