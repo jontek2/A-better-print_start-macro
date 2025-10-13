@@ -1,119 +1,105 @@
-<h1 align="center">
-  <br>
-  <img src="img/start.png" width="75""></a>
-  <br>
-    A better START_PRINT macro
-  <br>
-</h1>
+#!/bin/bash
+#####################################################################
+# START_PRINT/PRINT_START Macro Installation Script for Klipper
+# Author: ss1gohan13
+# Created: 2025-02-19 06:16:31 UTC
+# Repository: https://github.com/ss1gohan13/A-better-print_start-macro-SV08
+#####################################################################
 
-## :warning: Required changes to your printer system :warning:
+# Configuration
+DEFAULT_CONFIG_PATH="$HOME/printer_data/config"
+BACKUP_DIR="$DEFAULT_CONFIG_PATH/backup"
+MACRO_FILE="macros.cfg"
+BACKUP_SUFFIX=".backup-$(date +%Y%m%d_%H%M%S)"
 
-<B> ATTENTION SV08 USERS! DROP YOUR MAX ACCEL TO 20K IN THE PRINTER CONFIG!
+# Print colored output
+print_color() {
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    case "$1" in
+        "info") echo -e "[$timestamp] \e[34m[INFO]\e[0m $2" ;;
+        "success") echo -e "[$timestamp] \e[32m[SUCCESS]\e[0m $2" ;;
+        "warning") echo -e "[$timestamp] \e[33m[WARNING]\e[0m $2" ;;
+        "error") echo -e "[$timestamp] \e[31m[ERROR]\e[0m $2" ;;
+    esac
+}
 
-[KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) IS APPLIED IN THIS MACRO. YOU MUST INSTALL KAMP TO ENABLE SMART PARKING AND LINE PURGE. 
+# Create backup directory if it doesn't exist
+create_backup_dir() {
+    if [ ! -d "$BACKUP_DIR" ]; then
+        print_color "info" "Creating backup directory: $BACKUP_DIR"
+        mkdir -p "$BACKUP_DIR" || {
+            print_color "error" "Failed to create backup directory"
+            exit 1
+        }
+    fi
+}
 
-There are multiple `#STATUS_` macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect) and uncomment the ones desired. 
+# Restart Klipper function - simplified to only use systemctl
+restart_klipper() {
+    print_color "info" "Restarting Klipper service..."
+    
+    if command -v systemctl >/dev/null 2>&1; then
+        if sudo -n systemctl restart klipper 2>/dev/null; then
+            print_color "success" "Klipper service restarted successfully"
+            return 0
+        else
+            print_color "error" "Failed to restart Klipper service automatically"
+            print_color "info" "Please run: sudo systemctl restart klipper"
+            return 1
+        fi
+    else
+        print_color "error" "System service manager not found"
+        print_color "info" "Please restart Klipper manually"
+        return 1
+    fi
+}
 
-This start_print macro will pass data from your slicer to your printer and perform all necessary pre-flight commands for a successful print on your printer running Klipper. This means heat-soak, QGL/Z-tilt, bed mesh and a purge line before each print. </B>
-
-## :warning: REQUIRED changes in your slicer :warning:
-> [!IMPORTANT]
->You need to replace your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
-
-<details>
-<summary>SuperSlicer</summary>
-In Superslicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and replace it with:
-
-```
-M104 S0 ; Stops OrcaSlicer from sending temp waits separately
-M140 S0
-START_PRINT EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] MATERIAL=[filament_type]
-```
-</details>
-<details>
-<summary>OrcaSlicer</summary>
-In OrcaSlicer go to "Printer settings" -> "Machine start g-code" and replace it with:
-
-```
-M104 S0 ; Stops OrcaSlicer from sending temp waits separately
-M140 S0
-START_PRINT EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] MATERIAL=[filament_type]
-```
-</details>
-<details>
-<summary>PrusaSlicer</summary>
-
-In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and replace it with:
-
-```
-M104 S0 ; Stops PrusaSlicer from sending temp waits separately
-M140 S0
-start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] MATERIAL=[filament_vendor]
-```
-</details>
-<details>
-<summary>Cura</summary>
-
-In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings" -> "Start G-code" and replace it with:
-
-```
-start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature} MATERIAL={material_type}
-```
-</details>
-
-## :warning: OPTIONAL changes in your printer configuration :warning:
-
-> [!IMPORTANT]
->The start_print macro has predefined names for nevermore and chamber thermistor. If you do not have neither chamber thermistor, or nevermore, no changes are needed. If you are adding a nevermore and/or a chamber thermistor, make sure that yours are named correctly. In your printer.cfg file verify the following:
-
-<details>
-<summary>Chamber thermistor</summary>
-Make sure chamber thermistor is named "chamber" and update XXX.
-
-```
-[temperature_sensor chamber]
-sensor_type:  XXX
-sensor_pin:   XXX
-```
-</details>
-
-<details>
-<summary>Nevermore</summary>
-Make sure nevermore is named "nevermore" and update XXX.
-
-```
-[output_pin nevermore]
-pin: XXX
-value: 0
-shutdown_value: 0
-```
-</details>
-
-## :warning: Friendly reminder :warning:
-
-Remember to setup your [End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro) if you haven't already!
-
-> [!IMPORTANT]
-> If you do not have an end print macro in place, your toolhead will sit at the last part of your print, causing the print to deform where the nozzle is.
-
-## START_PRINT Macro
-
-<details>
-<summary>Auto Install Script</summary>
-
-```
-cd ~
-curl -sSL https://raw.githubusercontent.com/ss1gohan13/A-better-print_start-macro-SV08/main/direct_install.sh | bash
-```
-
-</details>
-
-Manual installation: Copy the macro and replace it with your old print_start/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and remove any commented parts of this macro that may be needed.
-
-<details>
-<summary>EXPAND THIS TO SEE THE START PRINT MACRO</summary>
-  
-```
+# Main installation function
+main() {
+    local config_path="$DEFAULT_CONFIG_PATH"
+    local macro_path="$config_path/$MACRO_FILE"
+    
+    print_color "info" "Starting installation..."
+    
+    # Check config directory
+    if [ ! -d "$config_path" ]; then
+        print_color "error" "Config directory not found: $config_path"
+        exit 1
+    fi
+    
+    # Create backup directory
+    create_backup_dir
+    
+    # Create or verify macro file
+    if [ ! -f "$macro_path" ]; then
+        print_color "info" "Creating new file: $MACRO_FILE"
+        touch "$macro_path" || {
+            print_color "error" "Failed to create file"
+            exit 1
+        }
+    fi
+    
+    # Check write permissions
+    if [ ! -w "$macro_path" ]; then
+        print_color "error" "Cannot write to $macro_path"
+        exit 1
+    fi
+    
+    # Create backup in backup directory
+    local backup_file="$BACKUP_DIR/$(basename "$MACRO_FILE")$BACKUP_SUFFIX"
+    print_color "info" "Creating backup in: $backup_file"
+    cp "$macro_path" "$backup_file" || {
+        print_color "error" "Failed to create backup"
+        exit 1
+    }
+    
+    # Remove existing START_PRINT and PRINT_START macros if they exist
+    print_color "info" "Updating START_PRINT macro..."
+    sed -i '/\[gcode_macro START_PRINT\]/,/^[[:space:]]*$/d' "$macro_path"
+    sed -i '/\[gcode_macro PRINT_START\]/,/^[[:space:]]*$/d' "$macro_path"
+    
+    # Append new START_PRINT macro
+    cat >> "$macro_path" << 'EOL'
 #####################################################################
 #------------------- A better start_print macro --------------------#
 #####################################################################
@@ -274,38 +260,21 @@ gcode:
     M117 Printer goes brrr                                      # Display print starting
     
     #STATUS_PRINTING                                             # Sets SB-LEDs to printing-mode
-```
-</details>
+EOL
+    
+    # Add include to printer.cfg if needed
+    if [ -f "$config_path/printer.cfg" ]; then
+        if ! grep -q "^\[include $MACRO_FILE\]" "$config_path/printer.cfg"; then
+            print_color "info" "Adding include to printer.cfg..."
+            echo -e "\n[include $MACRO_FILE]" >> "$config_path/printer.cfg"
+        fi
+    fi
+    
+    print_color "success" "START_PRINT macro has been updated!"
+    
+    # Automatically restart Klipper
+    restart_klipper
+}
 
-## Change log
-
-02-19-2025: Corrected formatting, spelling, order of operations, and change log
-
-02-18-2025: Initial installation script created
-
-01-11-2025: Initial creation 
-
-02-01-2025: WTFBBQAUCE I forgot to put all of the changes down. It's been a lot of formatting, additions, ect. 
-
-02-13-2025: Combined the start print macro to no longer require individual macros. (Got a nevermore? Awesome! Don't? Thats ok for heating purposes)
-
-## Interested in more macros?
-
-Hungry for more macromania? Make sure to check out these awesome links.
-
-- [A Better End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro)
-- [More replacement SV08 Macros](https://github.com/ss1gohan13/SV08-Replacement-Macros)
-- [Mjonuschat optimized bed leveling macros](https://mjonuschat.github.io/voron-mods/docs/guides/optimized-bed-leveling-macros/)
-- [Ellis Useful Macros](https://ellis3dp.com/Print-Tuning-Guide/articles/index_useful_macros.html)
-- [Voron Klipper Macros](https://github.com/The-Conglomerate/Voron-Klipper-Common/)
-- [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging)
-- [Klipper Shake&Tune plugin](https://github.com/Frix-x/klippain-shaketune)
-
-
-## Credits
-
-A big thank you to the Klipper communuity for helping make this macro. 
-
-## Feedback
-
-If you have feedback please open an issue on github.
+# Run the script
+main
