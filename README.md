@@ -114,6 +114,9 @@ gcode:
   ##  Uncomment for Beacon Contact (1 of 4 for beacon contact)
   #SET_GCODE_OFFSET Z=0                                 # Set offset to 0
 
+  # Clear any lingering pause states
+  CLEAR_PAUSE
+
   # Home the printer, set absolute positioning and update the Stealthburner LEDs.
   STATUS_HOMING                                         # Set LEDs to homing-mode
   G28                                                   # Full home (XYZ)
@@ -213,6 +216,9 @@ gcode:
   {% set target_chamber = params.CHAMBER|default("45")|int %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
+
+  # Clear any lingering pause states
+  CLEAR_PAUSE
 
   # Homes the printer and sets absolute positioning
   G28                                                 # Full home (XYZ)
