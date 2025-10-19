@@ -85,9 +85,6 @@ Remember to add ```SET_PIN PIN=nevermore VALUE=0``` to your print_end macro to t
 
 # V2.4/Trident macro
 
-> [!WARNING]  
-> The macro was updated recently (2024-09-07). If you run in to any issues then please let me know by opening a issue on github.
-
 Copy this macro and replace your old print_start macro in your printer.cfg. Then read through and uncomment parts of this macro.
 
 ```
@@ -253,6 +250,7 @@ gcode:
 
 ## Changelog
 
+2025-10-19: Added CLEAR_PAUSE<br>
 2024-09-07: Big update! Removed wall of text, added support for Beacon Contact, PrusaSlicer chamber temperature, fixed typos and more!<br>
 2024-05-30: Added support for Orcaslicer.<br>
 2022-09-??: Release!
