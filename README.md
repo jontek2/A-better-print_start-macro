@@ -122,9 +122,9 @@ gcode:
   ##  Uncomment for bed mesh (1 of 2 for bed mesh)
   #BED_MESH_CLEAR                                       # Clear old saved bed mesh (if any)
 
-  # Check if the bed temp is higher than 90c - if so then trigger a heatsoak.
+  # Check if the bed temp is higher than 90°C - if so then trigger a heatsoak.
   {% if params.BED|int > 90 %}
-    SET_DISPLAY_TEXT MSG="Bed: {target_bed}c"           # Display info on display
+    SET_DISPLAY_TEXT MSG="Bed: {target_bed}°C"           # Display info on display
     STATUS_HEATING                                      # Set LEDs to heating-mode
     M106 S255                                           # Turn on the PT-fan
 
@@ -133,12 +133,12 @@ gcode:
 
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
     M190 S{target_bed}                                  # Set the target temp for the bed
-    SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber}c"  # Display info on display
+    SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber}°C"  # Display info on display
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for chamber temp
 
-  # If the bed temp is not over 90c, then skip the heatsoak and just heat up to set temp with a 5 min soak
+  # If the bed temp is not over 90°C, then skip the heatsoak and just heat up to set temp with a 5 min soak
   {% else %}
-    SET_DISPLAY_TEXT MSG="Bed: {target_bed}c"           # Display info on display
+    SET_DISPLAY_TEXT MSG="Bed: {target_bed}°C"           # Display info on display
     STATUS_HEATING                                      # Set LEDs to heating-mode
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
     M190 S{target_bed}                                  # Set the target temp for the bed
@@ -146,8 +146,8 @@ gcode:
     G4 P300000                                          # Wait 5 min for the bedtemp to stabilize
   {% endif %}
 
-  # Heat hotend to 150c. This helps with getting a correct Z-home.
-  SET_DISPLAY_TEXT MSG="Hotend: 150c"                   # Display info on display
+  # Heat hotend to 150°C. This helps with getting a correct Z-home.
+  SET_DISPLAY_TEXT MSG="Hotend: 150°C"                   # Display info on display
   M109 S150                                             # Heat hotend to 150c
 
   ##  Uncomment for Beacon contact (2 of 4 for beacon contact)
@@ -174,7 +174,7 @@ gcode:
   #G28 Z METHOD=CONTACT CALIBRATE=0                     # Calibrate z offset only with hot nozzle
 
   # Heat up the hotend up to target via data from slicer
-  SET_DISPLAY_TEXT MSG="Hotend: {target_extruder}c"     # Display info on display
+  SET_DISPLAY_TEXT MSG="Hotend: {target_extruder}°C"     # Display info on display
   STATUS_HEATING                                        # Set LEDs to heating-mode
   G1 X{x_wait} Y{y_wait} Z15 F9000                      # Go to center of the bed
   M107                                                  # Turn off partcooling fan
@@ -221,7 +221,7 @@ gcode:
   G28                                                 # Full home (XYZ)
   G90                                                 # Absolute position
 
-  # Checks if the bed temp is higher than 90c - if so then trigger a heatsoak
+  # Checks if the bed temp is higher than 90°C - if so then trigger a heatsoak
   {% if params.BED|int > 90 %}
     M106 S255                                         # Turn on the PT-fan
 
@@ -232,7 +232,7 @@ gcode:
     M190 S{target_bed}                                # Set target temp for the bed
     TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber temp
 
-  # If the bed temp is not over 90c it skips the heatsoak and just heats up to set temp with a 1 min soak.
+  # If the bed temp is not over 90°C it skips the heatsoak and just heats up to set temp with a 1 min soak.
   {% else %}
     G1 X{x_wait} Y{y_wait} Z15 F9000                  # Go to center of the bed
     M190 S{target_bed}                                # Set target temp for the bed
