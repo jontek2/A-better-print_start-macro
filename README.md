@@ -79,7 +79,7 @@ sensor_pin:   XXX
 
 <details>
 <summary>Nevermore</summary>
-Make sure nevermore is named "nevermore" and update XXX.
+Make sure your fan(s) are named "nevermore" and update pin value XXX to your desired pin.
 
 ```
 [output_pin nevermore]
