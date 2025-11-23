@@ -42,7 +42,7 @@ In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and
 ```
 M104 S0 ; Stops PrusaSlicer from sending temp waits separately
 M140 S0
-print_start EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature]
+print_start EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] CHAMBER_MINIMAL=[chamber_minimal_temperature]
 ```
 </details>
 <details>
@@ -105,6 +105,8 @@ gcode:
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
   {% set target_chamber = params.CHAMBER|default("45")|int %}
+  {% set target_chamber_minimal = params.CHAMBER_MINIMAL|default("0")|int %}
+  {% set target_chamber_wait = [target_chamber, target_chamber_minimal]|select(">", 0)|min|default(0) %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
@@ -133,8 +135,8 @@ gcode:
 
     G1 X{x_wait} Y{y_wait} Z15 F9000                    # Go to center of the bed
     M190 S{target_bed}                                  # Set the target temp for the bed
-    SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber}c"  # Display info on display
-    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Waits for chamber temp
+    SET_DISPLAY_TEXT MSG="Heatsoak: {target_chamber_wait}c"  # Display info on display
+    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber_wait}   # Waits for chamber temp
 
   # If the bed temp is not over 90c, then skip the heatsoak and just heat up to set temp with a 5 min soak
   {% else %}
@@ -211,6 +213,8 @@ gcode:
   {% set target_bed = params.BED|int %}
   {% set target_extruder = params.EXTRUDER|int %}
   {% set target_chamber = params.CHAMBER|default("45")|int %}
+  {% set target_chamber_minimal = params.CHAMBER_MINIMAL|default("0")|int %}
+  {% set target_chamber_wait = [target_chamber, target_chamber_minimal]|select(">", 0)|min|default(0) %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
@@ -230,7 +234,7 @@ gcode:
 
     G1 X{x_wait} Y{y_wait} Z15 F9000                  # Go to center of the bed
     M190 S{target_bed}                                # Set target temp for the bed
-    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber}   # Wait for chamber temp
+    TEMPERATURE_WAIT SENSOR="temperature_sensor chamber" MINIMUM={target_chamber_wait}   # Wait for chamber temp
 
   # If the bed temp is not over 90c it skips the heatsoak and just heats up to set temp with a 1 min soak.
   {% else %}
@@ -250,6 +254,7 @@ gcode:
 
 ## Changelog
 
+2025-11-23: Add support for minimal chamber temperature (PrusaSlicer)<br>
 2025-10-19: Added CLEAR_PAUSE<br>
 2024-09-07: Big update! Removed wall of text, added support for Beacon Contact, PrusaSlicer chamber temperature, fixed typos and more!<br>
 2024-05-30: Added support for Orcaslicer.<br>
