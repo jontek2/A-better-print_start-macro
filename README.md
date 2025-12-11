@@ -98,6 +98,7 @@ Copy this macro and replace your old print_start macro in your printer.cfg. Then
 ## Z_TILT_ADJUST (For Trident only)
 ## QUAD_GANTRY_LEVEL (For V2.4 only)
 ## Beacon Contact logic (if you have one. 4 lines at 4 locations)
+## Automated Filament Control (AFC) logic (if you have the AFC-Klipper-Add-On. 2 lines at 2 locations)
 
 [gcode_macro PRINT_START]
 gcode:
@@ -109,6 +110,8 @@ gcode:
   {% set target_chamber_wait = [target_chamber, target_chamber_minimal]|select(">", 0)|min|default(0) %}
   {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
   {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
+  ##  Uncomment for AFC (1 of 2 for AFC)
+  {% set initial_tool = params.TOOL|default("0")|int %}
 
   ##  Uncomment for Beacon Contact (1 of 4 for beacon contact)
   #SET_GCODE_OFFSET Z=0                                 # Set offset to 0
@@ -184,6 +187,9 @@ gcode:
 
   ##   Uncomment for Beacon Contact (4 of 4 for beacon contact)
   #SET_GCODE_OFFSET Z=0.06                              # Add a little offset for hotend thermal expansion
+
+  ##   Uncomment if using AFC (2 of 2 for AFC)
+  #T{initial_tool}                                      # Load Initial Tool
 
   # Get ready to print by doing a primeline and updating the LEDs
   SET_DISPLAY_TEXT MSG="Printer goes brr"               # Display info on display
