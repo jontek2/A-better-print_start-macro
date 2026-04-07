@@ -266,7 +266,7 @@ EOL
     if [ -f "$config_path/printer.cfg" ]; then
         if ! grep -q "^\[include $MACRO_FILE\]" "$config_path/printer.cfg"; then
             print_color "info" "Adding include to printer.cfg..."
-            echo -e "\n[include $MACRO_FILE]" >> "$config_path/printer.cfg"
+            sed -i "1i [include $MACRO_FILE]" "$config_path/printer.cfg"
         fi
     fi
     
