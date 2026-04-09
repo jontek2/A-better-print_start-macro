@@ -96,7 +96,7 @@ Remember to setup your [End Print Macro](https://github.com/ss1gohan13/A-Better-
 > [!IMPORTANT]
 > If you do not have an end print macro in place, your toolhead will sit at the last part of your print, causing the print to deform where the nozzle is.
 
-## START_PRINT Macro
+## :warning: How to Install the START_PRINT Macro :warning:
 
 <details>
 <summary>Auto Install Script</summary>
@@ -111,7 +111,7 @@ curl -sSL https://raw.githubusercontent.com/ss1gohan13/A-better-print_start-macr
 Manual installation: Copy the macro and replace it with your old print_start/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and remove any commented parts of this macro that may be needed.
 
 <details>
-<summary>EXPAND THIS TO SEE THE START PRINT MACRO</summary>
+<summary>Click here to expand the start print macro to install manually</summary>
   
 ```
 #####################################################################
