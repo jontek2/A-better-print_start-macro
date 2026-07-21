@@ -257,6 +257,8 @@ gcode:
     #STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
     LINE_PURGE                                                  # KAMP line purge
 
+    M400                                                        # Wait for the Purge moves to finish
+
     M117 Printer goes brrr                                      # Display print starting
     
     #STATUS_PRINTING                                             # Sets SB-LEDs to printing-mode
