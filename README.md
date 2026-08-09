@@ -245,6 +245,13 @@ gcode:
     # M117 Hang tight...                                         # Display wait message
     # G4 P60000                                                   # Wait 1 min to stablize and cooldown the nozzle
 
+    M400
+    
+    M107                    # Disable part cooling - there was an issue with eddy tapping with fans spinning. 
+    G4 P2000                # Allow fans to fully spin down / settle
+
+    M400
+
     #STATUS_CALIBRATING_Z                                        # Sets SB-LEDs to z-calibration-mode
     #M117 Tappy Tap...                                           # Display tappy tap message
     #PROBE_EDDY_NG_TAP                                           # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
