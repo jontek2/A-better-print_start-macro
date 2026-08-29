@@ -48,7 +48,7 @@ In PrusaSlicer go to "Printer settings" -> "Custom g-code" -> "Start G-code" and
 ```
 M104 S0 ; Stops PrusaSlicer from sending temp waits separately
 M140 S0
-start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] MATERIAL=[filament_vendor]
+start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] CHAMBER_MINIMAL=[chamber_minimal_temperature] MATERIAL=[filament_vendor]
 ```
 </details>
 <details>
@@ -124,6 +124,8 @@ gcode:
     {% set target_bed = params.BED|int %}
     {% set target_extruder = params.EXTRUDER|int %}
     {% set target_chamber = params.CHAMBER|default("40")|int %}
+    {% set target_chamber_minimal = params.CHAMBER_MINIMAL|default("0")|int %}
+    {% set target_chamber_wait = [target_chamber, target_chamber_minimal]|select(">", 0)|min|default(0) %}
     {% set x_wait = printer.toolhead.axis_maximum.x|float / 2 %}
     {% set y_wait = printer.toolhead.axis_maximum.y|float / 2 %}
 
