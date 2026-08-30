@@ -240,13 +240,6 @@ gcode:
     #STATUS_CLEANING                                             # Sets SB-LEDs to cleaning-mode
     CLEAN_NOZZLE #EXTRUDER={target_extruder}                     # Clean nozzle before printing
 
-    # M117 Nozzle cooling 150C...                                # Display wait message
-    #STATUS_COOLING                                              # Sets SB-LEDs to cooling-mode
-    # M109 S150                                                   # Heats the nozzle to 150C
-
-    # M117 Hang tight...                                         # Display wait message
-    # G4 P60000                                                   # Wait 1 min to stablize and cooldown the nozzle
-
     M400
     
     M107                    # Disable part cooling - there was an issue with eddy tapping with fans spinning. 
@@ -257,6 +250,7 @@ gcode:
     #STATUS_CALIBRATING_Z                                        # Sets SB-LEDs to z-calibration-mode
     #M117 Tappy Tap...                                           # Display tappy tap message
     #PROBE_EDDY_NG_TAP                                           # See: https://hackmd.io/yEF4CEntSHiFTj230CdD0Q
+    #SET_Z_FROM_PROBE METHOD=tap                                 # Native Klipper Auto Z offset with Eddy Tap
 
     SMART_PARK                                                  # Parks the toolhead near the beginning of the print
 
