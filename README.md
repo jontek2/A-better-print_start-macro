@@ -10,15 +10,16 @@
 
 <B> ATTENTION SV08 USERS! DROP YOUR MAX ACCEL TO 20K IN THE PRINTER CONFIG!
 
-[KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) IS APPLIED IN THIS MACRO. YOU MUST INSTALL KAMP TO ENABLE SMART PARKING AND LINE PURGE. 
+[KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging) IS APPLIED IN THIS MACRO. YOU MUST INSTALL KAMP TO ENABLE SMART PARKING AND LINE PURGE.
 
-There are multiple `#STATUS_` macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect) and uncomment the ones desired. 
+There are multiple `#STATUS_` macros built into the start print sequence. These have all been commented out to prevent unknown errors. [If you have LEDs setup in your printer, look here](https://github.com/julianschill/klipper-led_effect) and uncomment the ones desired.
 
 This start_print macro will pass data from your slicer to your printer and perform all necessary pre-flight commands for a successful print on your printer running Klipper. This means heat-soak, QGL/Z-tilt, bed mesh and a purge line before each print. </B>
 
 ## :warning: REQUIRED changes in your slicer :warning:
+
 > [!IMPORTANT]
->You need to replace your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
+> You need to replace your "Start G-code" in your slicer to be able to send data from slicer to this macro. Click on the slicer you use below and read the instructions.
 
 <details>
 <summary>SuperSlicer</summary>
@@ -29,6 +30,7 @@ M104 S0 ; Stops OrcaSlicer from sending temp waits separately
 M140 S0
 START_PRINT EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] MATERIAL=[filament_type]
 ```
+
 </details>
 <details>
 <summary>OrcaSlicer</summary>
@@ -39,6 +41,7 @@ M104 S0 ; Stops OrcaSlicer from sending temp waits separately
 M140 S0
 START_PRINT EXTRUDER=[first_layer_temperature] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] MATERIAL=[filament_type]
 ```
+
 </details>
 <details>
 <summary>PrusaSlicer</summary>
@@ -50,6 +53,7 @@ M104 S0 ; Stops PrusaSlicer from sending temp waits separately
 M140 S0
 start_print EXTRUDER=[first_layer_temperature[initial_extruder]] BED=[first_layer_bed_temperature] CHAMBER=[chamber_temperature] CHAMBER_MINIMAL=[chamber_minimal_temperature] MATERIAL=[filament_vendor]
 ```
+
 </details>
 <details>
 <summary>Cura</summary>
@@ -59,12 +63,13 @@ In Cura go to "Settings" -> "Printer" -> "Manage printers" -> "Machine settings"
 ```
 start_print EXTRUDER={material_print_temperature_layer_0} BED={material_bed_temperature_layer_0} CHAMBER={build_volume_temperature} MATERIAL={material_type}
 ```
+
 </details>
 
 ## :warning: OPTIONAL changes in your printer configuration :warning:
 
 > [!IMPORTANT]
->The start_print macro has predefined names for nevermore and chamber thermistor. If you do not have neither chamber thermistor, or nevermore, no changes are needed. If you are adding a nevermore and/or a chamber thermistor, make sure that yours are named correctly. In your printer.cfg file verify the following:
+> The start_print macro has predefined names for nevermore and chamber thermistor. If you do not have neither chamber thermistor, or nevermore, no changes are needed. If you are adding a nevermore and/or a chamber thermistor, make sure that yours are named correctly. In your printer.cfg file verify the following:
 
 <details>
 <summary>Chamber thermistor</summary>
@@ -75,6 +80,7 @@ Make sure chamber thermistor is named "chamber" and update XXX.
 sensor_type:  XXX
 sensor_pin:   XXX
 ```
+
 </details>
 
 <details>
@@ -87,6 +93,49 @@ pin: XXX
 value: 0
 shutdown_value: 0
 ```
+
+</details>
+
+<details>
+<summary>Eddy Tap / Auto Z Offset</summary>
+
+The START_PRINT macro supports both **eddy-ng** and the new **native Klipper Eddy Tap** method for automatic Z offset.
+
+Only one tapping method should be enabled at a time.
+
+For eddy-ng:
+
+```
+PROBE_EDDY_NG_TAP
+#SET_Z_FROM_PROBE METHOD=tap
+```
+
+For native Klipper Eddy Tap:
+
+```
+#PROBE_EDDY_NG_TAP
+SET_Z_FROM_PROBE METHOD=tap
+```
+
+If you are not using either Eddy tapping method, leave both commands commented:
+
+```
+#PROBE_EDDY_NG_TAP
+#SET_Z_FROM_PROBE METHOD=tap
+```
+
+> [!IMPORTANT]
+> Native Klipper Eddy Tap must already be configured and calibrated before enabling `SET_Z_FROM_PROBE METHOD=tap`.
+
+The START_PRINT macro shuts down the part cooling fan before performing the tap:
+
+```
+M107
+G4 P2000
+```
+
+This allows the fan to fully stop before tapping. Fan vibration/noise has been observed to interfere with Eddy tapping.
+
 </details>
 
 ## :warning: Friendly reminder :warning:
@@ -106,13 +155,36 @@ cd ~
 curl -sSL https://raw.githubusercontent.com/ss1gohan13/A-better-print_start-macro-SV08/main/direct_install.sh | bash
 ```
 
+The installer will now ask which tap/Z-offset method you would like to use:
+
+```
+Select the tap/Z-offset method for START_PRINT:
+  1) None
+  2) eddy-ng
+  3) Native Klipper Eddy Tap
+```
+
+Selecting `1` leaves both tapping methods disabled.
+
+Selecting `2` enables:
+
+```
+PROBE_EDDY_NG_TAP
+```
+
+Selecting `3` enables:
+
+```
+SET_Z_FROM_PROBE METHOD=tap
+```
+
 </details>
 
 Manual installation: Copy the macro and replace it with your old print_start/start_print macro in your printer configuration (e.g. printer.cfg, macros.cfg, ect). Then read through and remove any commented parts of this macro that may be needed.
 
 <details>
 <summary>Click here to expand the start print macro to install manually</summary>
-  
+
 ```
 #####################################################################
 #------------------- A better start_print macro --------------------#
@@ -280,17 +352,20 @@ gcode:
     
     #STATUS_PRINTING                                             # Sets SB-LEDs to printing-mode
 ```
+
 </details>
 
 ## Change log
+
+08-30-2026: Added support for native Klipper Eddy Tap automatic Z offset using `SET_Z_FROM_PROBE METHOD=tap`. Updated the installer to allow selection between no tap, eddy-ng, and native Klipper Eddy Tap.
 
 02-19-2025: Corrected formatting, spelling, order of operations, and change log
 
 02-18-2025: Initial installation script created
 
-01-11-2025: Initial creation 
+01-11-2025: Initial creation
 
-02-01-2025: WTFBBQAUCE I forgot to put all of the changes down. It's been a lot of formatting, additions, ect. 
+02-01-2025: WTFBBQAUCE I forgot to put all of the changes down. It's been a lot of formatting, additions, ect.
 
 02-13-2025: Combined the start print macro to no longer require individual macros. (Got a nevermore? Awesome! Don't? Thats ok for heating purposes)
 
@@ -298,18 +373,17 @@ gcode:
 
 Hungry for more macromania? Make sure to check out these awesome links.
 
-- [A Better End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro)
-- [More replacement SV08 Macros](https://github.com/ss1gohan13/SV08-Replacement-Macros)
-- [Mjonuschat optimized bed leveling macros](https://mjonuschat.github.io/voron-mods/docs/guides/optimized-bed-leveling-macros/)
-- [Ellis Useful Macros](https://ellis3dp.com/Print-Tuning-Guide/articles/index_useful_macros.html)
-- [Voron Klipper Macros](https://github.com/The-Conglomerate/Voron-Klipper-Common/)
-- [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging)
-- [Klipper Shake&Tune plugin](https://github.com/Frix-x/klippain-shaketune)
-
+* [A Better End Print Macro](https://github.com/ss1gohan13/A-Better-End-Print-Macro)
+* [More replacement SV08 Macros](https://github.com/ss1gohan13/SV08-Replacement-Macros)
+* [Mjonuschat optimized bed leveling macros](https://mjonuschat.github.io/voron-mods/docs/guides/optimized-bed-leveling-macros/)
+* [Ellis Useful Macros](https://ellis3dp.com/Print-Tuning-Guide/articles/index_useful_macros.html)
+* [Voron Klipper Macros](https://github.com/The-Conglomerate/Voron-Klipper-Common/)
+* [KAMP](https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging)
+* [Klipper Shake&Tune plugin](https://github.com/Frix-x/klippain-shaketune)
 
 ## Credits
 
-A big thank you to the Klipper communuity for helping make this macro. 
+A big thank you to the Klipper communuity for helping make this macro.
 
 ## Feedback
 
